@@ -1,0 +1,159 @@
+-  Conflict Report  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+i.e.
+
+------------------------------------------------------------------------------
+2021-06-07
+
+From Inara, after I flew around all these:
+`Aonga` vs `Alliance of Imango` defending `Boulle Prospect` WAR 2:0/3
+`GCRV 3791` vs `GCRV 3791 Purple Comms Inc` defending `Schubert's
+Obligation` WAR 3:0/4
+`HIP 20722` vs `Aristocrats of Lhou Wangs` for `??` ELECTION 4:2 **WON**
+`HIP 22961` vs `Labour of HIP 22961` defending `Marques' Folly` WAR
+2:0/2
+`LP 158-2` vs `Gliesse 3299 Future` defending `White Brook Estate` WAR
+0:1/1
+`Lu Pardan` vs `Aristocrats of Allowini` for `??` WAR 2:1/4
+`Wolf 280` vs `Nagii Union` defending `Grechko Oasis` WAR 0:0/0 *NEW*
+------------------------------------------------------------------------------
+
+This should be 100% doable from elitebgs.app API hopefully.
+
+1) Get MF data
+2) Depending on what's in that get per-system data (for where there are
+conflicts).  Hope it contains start date of conflict, win:loss and the
+asset(s) being fought over.
+
+2021-06-07:
+          "conflicts": [
+            {
+              "days_won": 3,
+              "opponent_faction_id": "59ea8dc8d22c775be0b6a6be",
+              "opponent_name": "GCRV 3791 Purple Comms Inc",
+              "opponent_name_lower": "gcrv 3791 purple comms inc",
+              "stake": "Schubert's Obligation",
+              "stake_lower": "schubert's obligation",
+              "station_id": null,
+              "status": "active",
+              "type": "war"
+            }
+          ],
+
+So it contains type, if active, days won (not lost, see below for a
+0:1), asset at stake.
+
+          "conflicts": [
+            {
+              "days_won": 0,
+              "opponent_faction_id": "59e7ef10d22c775be00002a7",
+              "opponent_name": "Gliese 3299 Future",
+              "opponent_name_lower": "gliese 3299 future",
+              "stake": "White Brook Estate",
+              "stake_lower": "white brook estate",
+              "station_id": null,
+              "status": "active",
+              "type": "war"
+            }
+          ],
+
+Would need to fetch all the 'other faction's to get complete data ?
+No, fetch the *system* and you get:
+      "conflicts": [
+        {
+          "faction1": {
+            "days_won": 0,
+            "faction_id": "59e825ddd22c775be000c822",
+            "name": "Alliance of Imango",
+            "name_lower": "alliance of imango",
+            "stake": "",
+            "stake_lower": "",
+            "station_id": null
+          },
+          "faction2": {
+            "days_won": 3,
+            "faction_id": "59e7b9ddd22c775be0fe8a08",
+            "name": "CHIMERA",
+            "name_lower": "chimera",
+            "stake": "Boulle Prospect",
+            "stake_lower": "boulle prospect",
+            "station_id": "5a6d0eb8d1b6a37c3c4f2a38"
+          },
+          "status": "active",
+          "type": "war"
+        }
+      ],
+
+
+There's no "It started on this date", so would need to keep a running
+history.
+
+elitebgs.app API /systems returns this for a "won last tick":
+      "conflicts": [
+        {
+          "faction1": {
+            "days_won": 2,
+            "faction_id": "59e82871d22c775be000cfa6",
+            "name": "Aristocrats of Lhou Wangs",
+            "name_lower": "aristocrats of lhou wangs",
+            "stake": "Bethke Vision",
+            "stake_lower": "bethke vision",
+            "station_id": null
+          },
+          "faction2": {
+            "days_won": 4,
+            "faction_id": "59e7b9ddd22c775be0fe8a08",
+            "name": "CHIMERA",
+            "name_lower": "chimera",
+            "stake": "",
+            "stake_lower": "",
+            "station_id": null
+          },
+          "status": "",
+          "type": "election"
+        }
+      ],
+
+Need an example of 'pending'.
+        {
+          "faction1": {
+            "days_won": 0,
+            "faction_id": "59faf40dd22c775be04b3b8c",
+            "name": "Future of Tailla",
+            "name_lower": "future of tailla",
+            "stake": "Herrington Vision",
+            "stake_lower": "herrington vision",
+            "station_id": null
+          },
+          "faction2": {
+            "days_won": 0,
+            "faction_id": "59e8281ad22c775be000ceac",
+            "name": "CROSS Corp",
+            "name_lower": "cross corp",
+            "stake": "Romero Prospecting Installation",
+            "stake_lower": "romero prospecting installation",
+            "station_id": null
+          },
+          "status": "pending",
+          "type": "war"
+        }
+
+-  Inf% in Danger  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Spot where our inf% is getting 'close' to another faction.
+
+Modify 'close' depending on system population.  Lower pop is easier to
+move inf%.
+-  Needs New Data  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+A report on systems that have outdated data.
+
+Definitely if 3 days or more.  If we're losing a war 0:3 that we didn't
+spot otherwise (in-game local news) then this gives us 4 days to pull it
+back.
+Actually:
+tick-data(nothing)-tick-(war pending)-tick-active
+-tick-0:1-tick-0:2-tick-0:3-tick:0:4
+So up to 5 days out of date is salvagable, assuming you detect pending
+wars.
+-  Discord  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Need to either auth to use my/a bot account, or have a webhook set up on
+the server.
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
