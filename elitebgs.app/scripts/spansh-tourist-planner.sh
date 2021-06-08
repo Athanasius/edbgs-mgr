@@ -1,13 +1,14 @@
 #!/bin/sh
 # vim: tabstop=2 shiftwidth=2 expandtab wrapmargin=0 textwidth=0
 
-if [ -z "$1" -o -z "$2" ];
+if [ -z "$1" -o -z "$2" -o -z "$3" ];
 then
-  echo "spansh-tourist-planner <start system> <jump range>"
+  echo "spansh-tourist-planner <input file> <start system> <jump range>"
   exit 1
 fi
-start=$( echo "$1" | sed -e 's/ /%20/g;' )
-range=$2
+systemsfile="$1"
+start=$( echo "$2" | sed -e 's/ /%20/g;' )
+range=$3
 
 # curl --data <post data> https://www.spansh.co.uk/api/tourist/route
 #
@@ -16,7 +17,7 @@ range=$2
 
 data='range=32&loop=0'
 data="${data}&source=${start}"
-for s in $(fgrep -v "${start}" CHIMERA-systems.txt | sed -e 's/ /%20/g;');
+for s in $(fgrep -v "${start}" "${systemsfile}" | sed -e 's/ /%20/g;');
 do
   # s=$(echo "$s" | sed -e 's/ /%20/g;')
   data="${data}&destination=${s}"
