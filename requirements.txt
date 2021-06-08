@@ -1,1 +1,3 @@
-sqlalchemy
+greenlet==1.1.0
+PyYAML==5.4.1
+SQLAlchemy==1.4.17
