@@ -3,3 +3,4 @@
 *.txt
 out/
 spansh-tourist.out
+__pycache__/
