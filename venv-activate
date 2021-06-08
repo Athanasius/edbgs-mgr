@@ -1,0 +1,8 @@
+# Source me in bash
+export PATH="/usr/local/src/pyenv/bin:$PATH"
+export PYENV_ROOT=/usr/local/pyenv
+eval "$(pyenv init -)"
+eval "$(pyenv init --path)"
+eval "$(pyenv virtualenv-init -)"
+# python -m venv venv
+source venv/bin/activate
