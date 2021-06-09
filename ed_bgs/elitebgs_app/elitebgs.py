@@ -1,0 +1,41 @@
+"""
+Mediate access to the API provided by https://elitebgs.app/
+
+See: https://elitebgs.app/ebgs/docs/V5/
+"""
+
+import requests
+
+class EliteBGS:
+  """Access to the elitebgs.app API."""
+  FACTIONS_URL = 'https://elitebgs.app/api/ebgs/v5/factions'
+  SYSTEMS_URL = 'https://elitebgs.app/api/ebgs/v5/systems'
+
+  def __init__(self, logger, db):
+    """
+    Initialise access to elitebgs.app API.
+
+    :param logger: `logging.Logger` instance.
+    :param db: `ed_bgs.database` instance.
+    """
+    self.logger = logger
+    self.db = db
+
+    self.session = requests.Session()
+
+  def faction(self, faction_name: str):
+    """
+    Retrieve available data about the specified faction.
+
+    :param faction_name:
+    :returns:
+    """
+    try:
+      r = self.session.get(
+        f'{self.FACTIONS_URL}?name={faction_name}'
+      )
+
+    except requests.exceptions.HTTPError as e:
+      self.logger.warning(f'Error retrieving faction {faction_name}: {e!r}')
+
+    print(r.content)

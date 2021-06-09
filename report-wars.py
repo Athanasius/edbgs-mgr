@@ -48,9 +48,14 @@ def main():
   logger.info('Initialising Database Connection')
   db = ed_bgs.database(config['database']['url'], logger)
 
+  ebgs = ed_bgs.EliteBGS(logger, db)
   # Looping over monitored factions
   for f in config['monitor_factions']:
     logger.info(f'Checking faction: {f}')
+    # Fetch elitebgs.app data for this faction
+    faction = ebgs.faction(f)
+    # For each system with a conflict, fetch the system as well
+    # Record(/update?) the state of each conflict
 
 if __name__ == '__main__':
   main()
