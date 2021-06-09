@@ -26,7 +26,7 @@ class EliteBGS:
 
   def faction(self, faction_name: str):
     """
-    Retrieve available data about the specified faction.
+    Retrieve, and store, available data about the specified faction.
 
     :param faction_name:
     :returns:
@@ -44,8 +44,16 @@ class EliteBGS:
 
     try:
       data = r.json()
+      f = data['docs'][0]
 
     except json.JSONDecodeError as e:
       self.logger.warning(f'Error decoding JSON for faction {faction_name}: {e!r}')
       return None
 
+    with self.db.engine.connect() as conn:
+      stmt = self.db.factions.insert().values(
+        name=f['name']
+      )
+
+      result = conn.execute(stmt)
+      conn.commit()
