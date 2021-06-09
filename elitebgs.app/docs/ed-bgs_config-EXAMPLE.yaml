@@ -1,0 +1,6 @@
+database:
+        # url: "postgresql://USER:PASSWORD@DBHOST:DBPORT/DATABASE"
+
+monitor_factions: [
+        'Federal Congress',
+]
