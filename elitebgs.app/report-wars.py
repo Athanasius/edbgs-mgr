@@ -25,7 +25,7 @@ logger = logging.getLogger('report-wars')
 logger.setLevel(__default_loglevel)
 __logger_ch = logging.StreamHandler()
 __logger_ch.setLevel(__default_loglevel)
-__logger_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(module)s.%(funcName)s: %(message)s')
+__logger_formatter = logging.Formatter('%(asctime)s; %(name)s; %(levelname)s; %(module)s.%(funcName)s: %(message)s')
 __logger_formatter.default_time_format = '%Y-%m-%d %H:%M:%S';
 __logger_formatter.default_msec_format = '%s.%03d'
 __logger_ch.setFormatter(__logger_formatter)
@@ -47,6 +47,10 @@ def main():
   """Handle program invocation."""
   logger.info('Initialising Database Connection')
   db = ed_bgs.database(config['database']['url'], logger)
+
+  # Looping over monitored factions
+  for f in config['monitor_factions']:
+    logger.info(f'Checking faction: {f}')
 
 if __name__ == '__main__':
   main()
