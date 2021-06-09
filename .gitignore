@@ -3,3 +3,4 @@ venv/
 out/
 spansh-tourist.out
 __pycache__/
+ed-bgs_config.yaml
