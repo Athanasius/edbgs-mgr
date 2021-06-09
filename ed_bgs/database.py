@@ -1,10 +1,12 @@
-from sqlalchemy import create_engine, desc, exc, event, select
+from sqlalchemy import create_engine, func
 from sqlalchemy import MetaData, Table
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, BigInteger, Boolean, Float, Integer, Text, text
-from sqlalchemy.sql.sqltypes import TIMESTAMP
+#  from sqlalchemy.orm import sessionmaker
+# SQLAlchemy Column types
+from sqlalchemy import (
+  Column, BigInteger, Boolean, DateTime, FetchedValue, Float, ForeignKey, Integer, Sequence, Text, Sequence, Text,
+)
+#  from sqlalchemy.sql.sqltypes import TIMESTAMP
 
 #########################################################################
 # Our base class for database operations
@@ -24,6 +26,7 @@ class database(object):
       Column('id', Integer, primary_key=True),
       Column('name', Text, index=True),
     )
+
     systems = Table('systems', self.metadata,
       Column('id', Integer, primary_key=True),
       Column('name', Text, index=True),
@@ -37,6 +40,49 @@ class database(object):
       Column('system_faction', Text, default=None),
       Column('system_government', Text, default=None),
       Column('system_security', Text, default=None),
+    )
+
+    conflicts_id_seq = Sequence('conflicts_id_seq', metadata=self.metadata)
+    conflicts = Table('conflicts', self.metadata,
+      Column(
+        'id', Integer, conflicts_id_seq,
+        server_default=conflicts_id_seq.next_value(), primary_key=True,
+      ),
+      Column(
+        'systemaddress', BigInteger,
+         ForeignKey('systems.systemaddress'), nullable=False
+      ),
+      Column(
+        'created', DateTime,
+        server_default=func.now()
+      ),
+      Column(
+        'last_updated', DateTime,
+        server_default=func.now(),
+        server_onupdate=FetchedValue()
+      ),
+      Column(
+        'faction_id', Integer,
+         ForeignKey('factions.id'), nullable=False
+      ),
+      Column(
+        'opponent_faction_id', Integer,
+         ForeignKey('factions.id'), nullable=False
+      ),
+      Column(
+        'won_days', Integer,
+        server_default='0'
+      ),
+      Column(
+        'lost_days', Integer,
+        server_default='0'
+      ),
+      Column(
+        'status', Text,
+      ),
+      Column(
+        'type', Text,
+      ),
     )
     ######################################################################
 
