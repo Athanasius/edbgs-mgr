@@ -1,2 +1,5 @@
 .*.sw?
 venv/
+out/
+spansh-tourist.out
+__pycache__/
