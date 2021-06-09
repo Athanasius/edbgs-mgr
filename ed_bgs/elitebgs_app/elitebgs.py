@@ -4,6 +4,7 @@ Mediate access to the API provided by https://elitebgs.app/
 See: https://elitebgs.app/ebgs/docs/V5/
 """
 
+import json
 import requests
 
 class EliteBGS:
@@ -37,5 +38,14 @@ class EliteBGS:
 
     except requests.exceptions.HTTPError as e:
       self.logger.warning(f'Error retrieving faction {faction_name}: {e!r}')
+      return None
 
-    print(r.content)
+    print(r.content.decode())
+
+    try:
+      data = r.json()
+
+    except json.JSONDecodeError as e:
+      self.logger.warning(f'Error decoding JSON for faction {faction_name}: {e!r}')
+      return None
+

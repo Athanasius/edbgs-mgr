@@ -22,12 +22,12 @@ class database(object):
     self.metadata = MetaData()
     ######################################################################
     # Table definitions
-    factions = Table('factions', self.metadata,
+    self.factions = Table('factions', self.metadata,
       Column('id', Integer, primary_key=True),
       Column('name', Text, index=True),
     )
 
-    systems = Table('systems', self.metadata,
+    self.systems = Table('systems', self.metadata,
       Column('systemaddress', BigInteger, primary_key=True),
       Column('name', Text, index=True),
       Column('starpos_x', Float, default=None),
@@ -41,7 +41,7 @@ class database(object):
       Column('system_security', Text, default=None),
     )
 
-    faction_presence = Table('faction_presences', self.metadata,
+    self.faction_presence = Table('faction_presences', self.metadata,
       Column('faction_id', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
@@ -53,11 +53,44 @@ class database(object):
       Column('happiness', Text),
     )
 
-    conflicts_id_seq = Sequence('conflicts_id_seq', metadata=self.metadata)
-    conflicts = Table('conflicts', self.metadata,
+    # active states
+    self.faction_active_states = Table('faction_active_states', self.metadata,
+      Column('faction_id', Integer,
+        ForeignKey('factions.id'), nullable=False, index=True,
+      ),
+      Column('systemaddress', BigInteger,
+        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+      ),
+      Column('state', Text, nullable=False),
+    )
+    # pending states
+    self.faction_pending_states = Table('faction_pending_states', self.metadata,
+      Column('faction_id', Integer,
+        ForeignKey('factions.id'), nullable=False, index=True,
+      ),
+      Column('systemaddress', BigInteger,
+        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+      ),
+      Column('state', Text, nullable=False),
+      Column('trend', Integer),
+    )
+    # recovering states
+    self.faction_recovering_states = Table('faction_recovering_states', self.metadata,
+      Column('faction_id', Integer,
+        ForeignKey('factions.id'), nullable=False, index=True,
+      ),
+      Column('systemaddress', BigInteger,
+        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+      ),
+      Column('state', Text, nullable=False),
+      Column('trend', Integer),
+    )
+
+    self.conflicts_id_seq = Sequence('conflicts_id_seq', metadata=self.metadata)
+    self.conflicts = Table('conflicts', self.metadata,
       Column(
-        'id', Integer, conflicts_id_seq,
-        server_default=conflicts_id_seq.next_value(), primary_key=True,
+        'id', Integer, self.conflicts_id_seq,
+        server_default=self.conflicts_id_seq.next_value(), primary_key=True,
       ),
       Column(
         'systemaddress', BigInteger,
