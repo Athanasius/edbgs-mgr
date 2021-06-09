@@ -1,12 +1,14 @@
+import sqlalchemy
 from sqlalchemy import create_engine, func
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects import postgresql
-#  from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.orm import Session
 # SQLAlchemy Column types
 from sqlalchemy import (
   Column, BigInteger, Boolean, DateTime, FetchedValue, Float, ForeignKey, Integer, Sequence, Text, Sequence, Text,
 )
 #  from sqlalchemy.sql.sqltypes import TIMESTAMP
+from typing import Optional
 
 #########################################################################
 # Our base class for database operations
@@ -27,6 +29,10 @@ class database(object):
       Column('name', Text, primary_key=True),
       Column('id', Integer, self.factions_id_seq,
         server_default=self.factions_id_seq.next_value(), index=True,
+      ),
+      Column(
+        'created', DateTime,
+        server_default=func.now()
       ),
     )
 
@@ -135,3 +141,31 @@ class database(object):
 
     self.metadata.create_all(self.engine)
 
+  def record_faction(self, faction_name: str) -> Optional[int]:
+    """
+    Record the given faction name in the database.
+
+    :param faction_name:
+    :returns: id of the faction
+    """
+
+    # Attempt to INSERT
+    with self.engine.connect() as conn:
+      stmt = self.factions.insert().values(
+        name=faction_name
+      )
+
+      try:
+        result = conn.execute(stmt)
+
+      except sqlalchemy.exc.IntegrityError:
+        # Assume already present
+        pass
+
+    # Retrieve the `id` value for this faction
+    with self.engine.connect() as conn:
+      stmt = self.factions.select().where(self.factions.c.name == f'{faction_name}')
+      result = conn.execute(stmt)
+      return result.first()._mapping['id']
+
+    return None

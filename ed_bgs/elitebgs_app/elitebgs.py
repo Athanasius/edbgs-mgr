@@ -40,7 +40,7 @@ class EliteBGS:
       self.logger.warning(f'Error retrieving faction {faction_name}: {e!r}')
       return None
 
-    print(r.content.decode())
+    # print(r.content.decode())
 
     try:
       data = r.json()
@@ -50,9 +50,5 @@ class EliteBGS:
       self.logger.warning(f'Error decoding JSON for faction {faction_name}: {e!r}')
       return None
 
-    with self.db.engine.begin() as conn:
-      stmt = self.db.factions.insert().values(
-        name=f['name']
-      )
-
-      result = conn.execute(stmt)
+    faction_id = self.db.record_faction(f['name'])
+    self.logger.info(f'{faction_name} is id "{faction_id}"')
