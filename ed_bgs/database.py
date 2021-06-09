@@ -28,9 +28,8 @@ class database(object):
     )
 
     systems = Table('systems', self.metadata,
-      Column('id', Integer, primary_key=True),
+      Column('systemaddress', BigInteger, primary_key=True),
       Column('name', Text, index=True),
-      Column('systemaddress', BigInteger, index=True),
       Column('starpos_x', Float, default=None),
       Column('starpos_y', Float, default=None),
       Column('starpos_z', Float, default=None),
@@ -40,6 +39,18 @@ class database(object):
       Column('system_faction', Text, default=None),
       Column('system_government', Text, default=None),
       Column('system_security', Text, default=None),
+    )
+
+    faction_presence = Table('faction_presences', self.metadata,
+      Column('faction_id', Integer,
+        ForeignKey('factions.id'), nullable=False, index=True,
+      ),
+      Column('systemaddress', BigInteger,
+        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+      ),
+      Column('state', Text, index=True),
+      Column('influence', Float, index=True),
+      Column('happiness', Text),
     )
 
     conflicts_id_seq = Sequence('conflicts_id_seq', metadata=self.metadata)
