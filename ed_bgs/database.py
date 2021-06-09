@@ -164,7 +164,7 @@ class database(object):
 
     # Retrieve the `id` value for this faction
     with self.engine.connect() as conn:
-      stmt = self.factions.select().where(self.factions.c.name == f'{faction_name}')
+      stmt = self.factions.select().where(self.factions.c.name == faction_name)
       result = conn.execute(stmt)
       return result.first()._mapping['id']
 
