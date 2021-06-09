@@ -49,6 +49,7 @@ def main():
   db = ed_bgs.database(config['database']['url'], logger)
 
   ebgs = ed_bgs.EliteBGS(logger, db)
+  # return None
   # Looping over monitored factions
   for f in config['monitor_factions']:
     logger.info(f'Checking faction: {f}')

@@ -50,10 +50,9 @@ class EliteBGS:
       self.logger.warning(f'Error decoding JSON for faction {faction_name}: {e!r}')
       return None
 
-    with self.db.engine.connect() as conn:
+    with self.db.engine.begin() as conn:
       stmt = self.db.factions.insert().values(
         name=f['name']
       )
 
       result = conn.execute(stmt)
-      conn.commit()

@@ -24,10 +24,10 @@ class database(object):
     # Table definitions
     self.factions_id_seq = Sequence('factions_id_seq', metadata=self.metadata)
     self.factions = Table('factions', self.metadata,
+      Column('name', Text, primary_key=True),
       Column('id', Integer, self.factions_id_seq,
-        server_default=self.factions_id_seq.next_value(), primary_key=True,
+        server_default=self.factions_id_seq.next_value(), index=True,
       ),
-      Column('name', Text, index=True),
     )
 
     self.systems = Table('systems', self.metadata,
