@@ -153,6 +153,10 @@ tick-data(nothing)-tick-(war pending)-tick-active
 -tick-0:1-tick-0:2-tick-0:3-tick:0:4
 So up to 5 days out of date is salvagable, assuming you detect pending
 wars.
+-  Economic State  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Systems that need work
+-  Security State  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+Systems that need work
 -  Discord  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Need to either auth to use my/a bot account, or have a webhook set up on
 the server.
