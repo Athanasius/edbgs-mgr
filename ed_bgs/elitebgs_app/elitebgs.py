@@ -93,6 +93,16 @@ class EliteBGS:
       self.logger.warning(f'Error decoding JSON for system {system_name}: {e!r}')
       return None
 
+    # Record any faction mentioned in a conflict
+    for c in system_data.get('conflicts', []):
+      for f in ('faction1', 'faction2'):
+        faction_id = self.db.record_faction(c[f]['name'])
+        self.logger.debug(f'Recorded conflict faction {c[f]["name"]} under id {faction_id}')
+
+    # Record the controlling faction
+    controlling_faction_id = self.db.record_faction(system_data['controlling_minor_faction_cased'])
+    self.logger.debug(f'Recorded controlling faction {system_data["controlling_minor_faction_cased"]} under id {controlling_faction_id}')
+
     system_db = {
       'systemaddress':              system_data['system_address'],
       'name':                       system_data['name'],
@@ -102,15 +112,10 @@ class EliteBGS:
       'system_allegiance':          system_data['allegiance'],
       'system_economy':             system_data['primary_economy'],
       'system_secondary_economy':   system_data['secondary_economy'],
-      'system_controlling_faction': system_data['controlling_minor_faction_cased'],
+      'system_controlling_faction': controlling_faction_id,
       'system_government':          system_data['government'],
       'system_security':            system_data['security'],
     }
     system = self.db.record_system(system_db)
-
-    for c in system_data.get('conflicts', []):
-      for f in ('faction1', 'faction2'):
-        faction_id = self.db.record_faction(c[f]['name'])
-        self.logger.debug(f'Recorded faction {c[f]["name"]} under id {faction_id}')
 
     return system

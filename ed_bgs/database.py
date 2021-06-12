@@ -30,6 +30,7 @@ class database(object):
       Column('name', Text, primary_key=True),
       Column('id', Integer, self.factions_id_seq,
         server_default=self.factions_id_seq.next_value(), index=True,
+        unique=True
       ),
       Column(
         'created', DateTime,
@@ -46,7 +47,9 @@ class database(object):
       Column('system_allegiance', Text, default=None),
       Column('system_economy', Text, default=None),
       Column('system_secondary_economy', Text, default=None),
-      Column('system_controlling_faction', Text, default=None),
+      Column('system_controlling_faction', Integer,
+        ForeignKey('factions.id'), nullable=False, index=True,
+      ),
       Column('system_government', Text, default=None),
       Column('system_security', Text, default=None),
     )
