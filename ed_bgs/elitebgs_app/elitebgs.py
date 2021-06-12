@@ -93,11 +93,15 @@ class EliteBGS:
       self.logger.warning(f'Error decoding JSON for system {system_name}: {e!r}')
       return None
 
-    # Record any faction mentioned in a conflict
+    # Record any conflicts data
     for c in system_data.get('conflicts', []):
       for f in ('faction1', 'faction2'):
+        # The faction names must exist in our DB
         faction_id = self.db.record_faction(c[f]['name'])
         self.logger.debug(f'Recorded conflict faction {c[f]["name"]} under id {faction_id}')
+        
+      # Now ensure this conflict is in our DB
+      conflict_id = self.db.record_conflict(c)
 
     # Record the controlling faction
     controlling_faction_id = self.db.record_faction(system_data['controlling_minor_faction_cased'])

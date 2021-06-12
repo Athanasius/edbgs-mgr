@@ -141,6 +141,17 @@ class database(object):
         'type', Text,
       ),
     )
+
+    self.factions_conflicts = Table('factions_conflicts', self.metadata,
+      Column(
+        'faction_id', Integer,
+         ForeignKey('factions.id'), nullable=False
+      ),
+      Column(
+        'conflict_id', Integer,
+         ForeignKey('conflicts.id'), nullable=False
+      ),
+    )
     ######################################################################
 
     self.metadata.create_all(self.engine)
