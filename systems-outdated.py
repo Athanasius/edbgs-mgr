@@ -55,7 +55,8 @@ def main():
     for s in d['faction_presence']:
       updated = isoparse(s['updated_at'])
       if (updated < day_ago):
-        print(f'{s["system_name"]:30} {updated}')
+        #print(f'{s["system_name"]:30} {updated}')
+        print(s["system_name"])
 
   
 
