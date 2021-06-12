@@ -2,6 +2,7 @@ import sqlalchemy
 from sqlalchemy import create_engine, func
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import insert
 # from sqlalchemy.orm import Session
 # SQLAlchemy Column types
 from sqlalchemy import (
@@ -44,8 +45,8 @@ class database(object):
       Column('starpos_z', Float, default=None),
       Column('system_allegiance', Text, default=None),
       Column('system_economy', Text, default=None),
-      Column('system_second_economy', Text, default=None),
-      Column('system_faction', Text, default=None),
+      Column('system_secondary_economy', Text, default=None),
+      Column('system_controlling_faction', Text, default=None),
       Column('system_government', Text, default=None),
       Column('system_security', Text, default=None),
     )
@@ -167,5 +168,48 @@ class database(object):
       stmt = self.factions.select().where(self.factions.c.name == faction_name)
       result = conn.execute(stmt)
       return result.first()._mapping['id']
+
+    return None
+
+  def record_system(self, system_data: dict) -> Optional[int]:
+    """
+    Record the given system data in the database.
+
+    :param system_data: `dict` with key:value per database column.
+    :returns: The database data for that system.
+    """
+
+    # Attempt to INSERT
+    with self.engine.connect() as conn:
+      stmt = insert(self.systems).values(
+        systemaddress=system_data['systemaddress'],
+        name=system_data['name'],
+        starpos_x=system_data['starpos_x'],
+        starpos_y=system_data['starpos_y'],
+        starpos_z=system_data['starpos_z'],
+        system_allegiance=system_data['system_allegiance'],
+        system_economy=system_data['system_economy'],
+        system_secondary_economy=system_data['system_secondary_economy'],
+        system_controlling_faction=system_data['system_controlling_faction'],
+        system_government=system_data['system_government'],
+        system_security=system_data['system_security'],
+      ).on_conflict_do_update(
+        constraint='systems_pkey',
+        set_=system_data
+      )
+
+      try:
+        result = conn.execute(stmt)
+
+      except sqlalchemy.exc.IntegrityError:
+        # Assume already present
+        self.logger.error('IntegrityError inserting system data')
+        return None
+
+    # Retrieve the `id` value for this system
+    with self.engine.connect() as conn:
+      stmt = self.systems.select().where(self.systems.c.systemaddress == system_data['systemaddress'])
+      result = conn.execute(stmt)
+      return result.first()
 
     return None
