@@ -29,7 +29,7 @@ class EliteBGS:
     Retrieve, and store, available data about the specified faction.
 
     :param faction_name:
-    :returns:
+    :returns: ???
     """
     try:
       r = self.session.get(
@@ -53,9 +53,26 @@ class EliteBGS:
     faction_id = self.db.record_faction(f['name'])
     self.logger.info(f'{faction_name} is id "{faction_id}"')
 
+    # First ensure all the presence data, particularly active/pending/recovering
+    # states is recorded.
     for s in f['faction_presence']:
+      # Ensure the system is in our database.
       s_data = self.system(s['system_name'])
-      # This will contain the other side of any conflict we're involved in.
+
+      # Record any active states
+      self.db.record_faction_active_states(faction_id, s_data['system_address'], [as['state'] for as in s.get('active_states', [])])
+
+  def record_faction_active_states(faction_id: int, system_id: int, states: list):
+    """
+    Record all currently active states for the given (faction, system).
+
+    :param faction_id: Our ID for this faction.
+    :param system_id: The system's systemaddress.
+    :param states: `list` of strings representing states.
+    """
+    # We need a transaction for this
+    # First clear all the states for this (faction, system) tuple
+    # Now add in all of the specified ones.
 
   def faction_name_only(self, faction_name: str):
     """
@@ -93,16 +110,6 @@ class EliteBGS:
       self.logger.warning(f'Error decoding JSON for system {system_name}: {e!r}')
       return None
 
-    # Record any conflicts data
-    for c in system_data.get('conflicts', []):
-      for f in ('faction1', 'faction2'):
-        # The faction names must exist in our DB
-        faction_id = self.db.record_faction(c[f]['name'])
-        self.logger.debug(f'Recorded conflict faction {c[f]["name"]} under id {faction_id}')
-        
-      # Now ensure this conflict is in our DB
-      conflict_id = self.db.record_conflict(c)
-
     # Record the controlling faction
     controlling_faction_id = self.db.record_faction(system_data['controlling_minor_faction_cased'])
     self.logger.debug(f'Recorded controlling faction {system_data["controlling_minor_faction_cased"]} under id {controlling_faction_id}')
@@ -123,3 +130,15 @@ class EliteBGS:
     system = self.db.record_system(system_db)
 
     return system
+
+  def system_conflicts(self, data: dict):
+    """Record any conflicts data."""
+    for c in data.get('conflicts', []):
+      for f in ('faction1', 'faction2'):
+        # The faction names must exist in our DB
+        faction_id = self.db.record_faction(c[f]['name'])
+        self.logger.debug(f'Recorded conflict faction {c[f]["name"]} under id {faction_id}')
+        
+      # Now ensure this conflict is in our DB
+      conflict_id = self.db.record_conflict(c)
+
