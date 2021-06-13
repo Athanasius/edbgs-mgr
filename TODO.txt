@@ -157,6 +157,11 @@ wars.
 Systems that need work
 -  Security State  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Systems that need work
+-  Take PowerPlay bubbles into account  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+If we 'stray' into PP bubbles, particularly Federation/Zachary Hudson
+ones, we get steamrollered by far more Cmdrs than we can hope to match.
+
+So some priority on conflicts we can actually *win* is in order.
 -  Discord  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Need to either auth to use my/a bot account, or have a webhook set up on
 the server.
