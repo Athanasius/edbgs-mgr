@@ -29,7 +29,7 @@ class EliteBGS:
     Retrieve, and store, available data about the specified faction.
 
     :param faction_name:
-    :returns: ???
+    :returns: The elitebgs.app 'document' for the faction.
     """
     try:
       r = self.session.get(
@@ -60,7 +60,9 @@ class EliteBGS:
       s_data = self.system(s['system_name'])
 
       # Record any active states
-      self.db.record_faction_active_states(faction_id, s_data['system_address'], [as['state'] for as in s.get('active_states', [])])
+      self.db.record_faction_active_states(faction_id, s_data['system_address'], [active['state'] for active in s.get('active_states', [])])
+
+    return f
 
   def record_faction_active_states(faction_id: int, system_id: int, states: list):
     """
