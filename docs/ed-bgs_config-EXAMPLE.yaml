@@ -1,6 +1,14 @@
+# Database configuration.
+# Enough PostgreSQL-specific parts of SQLAlchemy are used that it's the
+# only viable option currently.
 database:
         # url: "postgresql://USER:PASSWORD@DBHOST:DBPORT/DATABASE"
 
+# List of factions to monitor
 monitor_factions: [
         'Federal Congress',
 ]
+
+# How many hours old system data has to be in order to be considered out
+# of date.
+outdated_hours = 24
