@@ -39,7 +39,8 @@ logger.addHandler(__logger_ch)
 """
 __parser = argparse.ArgumentParser()
 __parser.add_argument('--loglevel', help='set the log level to one of: DEBUG, INFO (default), WARNING, ERROR, CRITICAL')
-__parser.add_argument('jsonfilename', help='Name of file containing elitebgs.app API output to process')
+__parser.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
+__parser.add_argument('--age', type=int, help='How many hours ago is considered outdated.')
 args = __parser.parse_args()
 if args.loglevel:
   level = getattr(logging, args.loglevel.upper())
@@ -48,17 +49,19 @@ if args.loglevel:
 
 
 def main():
-  with open(args.jsonfilename, 'r', encoding='utf-8') as f:
-    j = json.load(f)
-    d = j['docs'][0]
-    day_ago = datetime.now(tz=timezone.utc) - timedelta(days=1)
-    for s in d['faction_presence']:
-      updated = isoparse(s['updated_at'])
-      if (updated < day_ago):
-        #print(f'{s["system_name"]:30} {updated}')
-        print(s["system_name"])
+  hours_ago = args.age if args.age else config.get('outdated_hours', 24)
 
-  
+  if args.jsonfilename:
+    with open(args.jsonfilename, 'r', encoding='utf-8') as f:
+      j = json.load(f)
+      data = j['docs'][0]
+
+  since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
+  for s in data['faction_presence']:
+    updated = isoparse(s['updated_at'])
+    if (updated < since):
+      #print(f'{s["system_name"]:30} {updated}')
+      print(s["system_name"])
 
 if __name__ == '__main__':
   main()
