@@ -11,4 +11,4 @@ monitor_factions: [
 
 # How many hours old system data has to be in order to be considered out
 # of date.
-outdated_hours = 24
+outdated_hours: 24
