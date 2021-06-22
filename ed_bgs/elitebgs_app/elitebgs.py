@@ -60,21 +60,9 @@ class EliteBGS:
       s_data = self.system(s['system_name'])
 
       # Record any active states
-      self.db.record_faction_active_states(faction_id, s_data['system_address'], [active['state'] for active in s.get('active_states', [])])
+      self.db.record_faction_active_states(faction_id, s_data['systemaddress'], [active['state'] for active in s.get('active_states', [])])
 
     return f
-
-  def record_faction_active_states(faction_id: int, system_id: int, states: list):
-    """
-    Record all currently active states for the given (faction, system).
-
-    :param faction_id: Our ID for this faction.
-    :param system_id: The system's systemaddress.
-    :param states: `list` of strings representing states.
-    """
-    # We need a transaction for this
-    # First clear all the states for this (faction, system) tuple
-    # Now add in all of the specified ones.
 
   def faction_name_only(self, faction_name: str):
     """

@@ -1,5 +1,5 @@
 import sqlalchemy
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine, delete, func
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import insert
@@ -227,3 +227,32 @@ class database(object):
       return result.first()
 
     return None
+
+  def record_faction_active_states(self, faction_id: int, system_id: int, states: list):
+    """
+    Update database for these to be the active states of the given faction.
+
+    :param faction_id: Our DB id of the faction.
+    :param system_id: The system if this is for.
+    :param states: List of currently active states.
+    """
+    # We need a transaction for this
+    with self.engine.begin() as conn:
+      # First clear all the states for this (faction, system) tuple
+      conn.execute(
+        delete(self.faction_active_states).where(
+          self.faction_active_states.c.faction_id == faction_id
+        ).where(
+          self.faction_active_states.c.systemaddress == system_id
+        )
+      )
+      # Now add in all of the specified ones.
+      for a_state in states:
+        conn.execute(
+          insert(self.faction_active_states).values(
+            faction_id=faction_id,
+            systemaddress=system_id,
+            state=a_state,
+          )
+        )
+
