@@ -56,7 +56,7 @@ class database(object):
       Column('system_security', Text, default=None),
     )
 
-    self.factions_presence = Table('factions_presence', self.metadata,
+    self.factions_presences = Table('factions_presences', self.metadata,
       Column('faction_id', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
@@ -69,12 +69,12 @@ class database(object):
       UniqueConstraint(
         'faction_id',
         'systemaddress',
-        name='factions_presence_tuple',
+        name='factions_presences_tuple',
       ),
     )
 
     # active states
-    self.faction_active_states = Table('faction_active_states', self.metadata,
+    self.factions_active_states = Table('factions_active_states', self.metadata,
       Column('faction_id', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
@@ -84,7 +84,7 @@ class database(object):
       Column('state', Text, nullable=False),
     )
     # pending states
-    self.faction_pending_states = Table('faction_pending_states', self.metadata,
+    self.factions_pending_states = Table('factions_pending_states', self.metadata,
       Column('faction_id', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
@@ -95,7 +95,7 @@ class database(object):
       Column('trend', Integer),
     )
     # recovering states
-    self.faction_recovering_states = Table('faction_recovering_states', self.metadata,
+    self.factions_recovering_states = Table('factions_recovering_states', self.metadata,
       Column('faction_id', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
@@ -164,6 +164,11 @@ class database(object):
         'conflict_id', Integer,
          ForeignKey('conflicts.id'), nullable=False
       ),
+      UniqueConstraint(
+        'faction_id',
+        'conflict_id',
+        name='factions_conflicts_tuple',
+      ),
     )
     ######################################################################
 
@@ -207,10 +212,10 @@ class database(object):
     """
     data['faction_id'] = faction_id
     with self.engine.connect() as conn:
-      stmt = insert(self.factions_presence).values(
+      stmt = insert(self.factions_presences).values(
         data
       ).on_conflict_do_update(
-        constraint='factions_presence_tuple',
+        constraint='factions_presences_tuple',
         set_=data
       )
 
@@ -278,16 +283,16 @@ class database(object):
     with self.engine.begin() as conn:
       # First clear all the states for this (faction, system) tuple
       conn.execute(
-        delete(self.faction_active_states).where(
-          self.faction_active_states.c.faction_id == faction_id
+        delete(self.factions_active_states).where(
+          self.factions_active_states.c.faction_id == faction_id
         ).where(
-          self.faction_active_states.c.systemaddress == system_id
+          self.factions_active_states.c.systemaddress == system_id
         )
       )
       # Now add in all of the specified ones.
       for a_state in states:
         conn.execute(
-          insert(self.faction_active_states).values(
+          insert(self.factions_active_states).values(
             faction_id=faction_id,
             systemaddress=system_id,
             state=a_state,
@@ -306,16 +311,16 @@ class database(object):
     with self.engine.begin() as conn:
       # First clear all the states for this (faction, system) tuple
       conn.execute(
-        delete(self.faction_pending_states).where(
-          self.faction_pending_states.c.faction_id == faction_id
+        delete(self.factions_pending_states).where(
+          self.factions_pending_states.c.faction_id == faction_id
         ).where(
-          self.faction_pending_states.c.systemaddress == system_id
+          self.factions_pending_states.c.systemaddress == system_id
         )
       )
       # Now add in all of the specified ones.
       for a_state in states:
         conn.execute(
-          insert(self.faction_pending_states).values(
+          insert(self.factions_pending_states).values(
             faction_id=faction_id,
             systemaddress=system_id,
             state=a_state,
@@ -334,16 +339,16 @@ class database(object):
     with self.engine.begin() as conn:
       # First clear all the states for this (faction, system) tuple
       conn.execute(
-        delete(self.faction_recovering_states).where(
-          self.faction_recovering_states.c.faction_id == faction_id
+        delete(self.factions_recovering_states).where(
+          self.factions_recovering_states.c.faction_id == faction_id
         ).where(
-          self.faction_recovering_states.c.systemaddress == system_id
+          self.factions_recovering_states.c.systemaddress == system_id
         )
       )
       # Now add in all of the specified ones.
       for a_state in states:
         conn.execute(
-          insert(self.faction_recovering_states).values(
+          insert(self.factions_recovering_states).values(
             faction_id=faction_id,
             systemaddress=system_id,
             state=a_state,
