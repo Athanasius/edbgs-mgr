@@ -50,8 +50,7 @@ class EliteBGS:
       self.logger.warning(f'Error decoding JSON for faction {faction_name}: {e!r}')
       return None
 
-    faction_id = self.db.record_faction(f['name'])
-    self.logger.info(f'{faction_name} is id "{faction_id}"')
+    faction_id = self.faction_name_only(faction_name)
 
     # First ensure all the presence data, particularly active/pending/recovering
     # states is recorded.
@@ -75,6 +74,26 @@ class EliteBGS:
 
     return f
 
+  def faction_in_system(self, faction_name: str, system_id: int, data: dict):
+    """
+    Store information about the given faction in the given system.
+
+    :param faction_name: Name of the faction.
+    :param system_id: Our DB id of the system.
+    :param data: elitebgs.app API 'faction_presence' dict.
+    """
+    faction_id = self.faction_name_only(faction_name)
+
+    set_data = {
+      'systemaddress': system_id,
+      'state': data['state'],
+      'influence': data['influence'],
+      'happiness': data['happiness'],
+    }
+    f = self.db.record_faction_presence(faction_id, set_data)
+
+    return f
+
   def faction_name_only(self, faction_name: str):
     """
     Ensure a faction name is in the database.
@@ -82,8 +101,10 @@ class EliteBGS:
     :param faction_name:
     :returns:
     """
-    faction_id = self.db.record_faction(f['name'])
+    faction_id = self.db.record_faction(faction_name)
     self.logger.info(f'{faction_name} is id "{faction_id}"')
+
+    return faction_id
 
   def system(self, system_name: str):
     """
@@ -94,7 +115,7 @@ class EliteBGS:
     """
     try:
       r = self.session.get(
-        f'{self.SYSTEMS_URL}?name={system_name}'
+        f'{self.SYSTEMS_URL}?name={system_name}&factionDetails=true'
       )
 
     except requests.exceptions.HTTPError as e:
@@ -129,6 +150,15 @@ class EliteBGS:
       'system_security':            system_data['security'],
     }
     system = self.db.record_system(system_db)
+
+    # Now we have the system, record *all* the factions present in it
+    for f in system_data['factions']:
+      self.faction_in_system(
+        f['name'],
+        system['systemaddress'],
+        f['faction_details']['faction_presence'],
+      )
+
 
     # TODO: Record the 'other' side of conflicts.
     #       The per-faction conflicts list only contains days_won, for

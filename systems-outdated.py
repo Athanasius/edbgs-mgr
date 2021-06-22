@@ -54,11 +54,19 @@ if args.loglevel:
 
 def main():
   hours_ago = args.age if args.age else config.get('outdated_hours', 24)
+  since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
 
   if args.jsonfilename:
     with open(args.jsonfilename, 'r', encoding='utf-8') as f:
       j = json.load(f)
       data = j['docs'][0]
+
+    # We only have static file data, so do the simple check.
+    for s in data['faction_presence']:
+      updated = isoparse(s['updated_at'])
+      if (updated < since):
+        #print(f'{s["system_name"]:30} {updated}')
+        print(s["system_name"])
 
   elif args.faction:
     db = ed_bgs.database(config['database']['url'], logger)
@@ -69,12 +77,6 @@ def main():
     logger.error("No data source was specified?")
     exit(-1)
 
-  since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
-  for s in data['faction_presence']:
-    updated = isoparse(s['updated_at'])
-    if (updated < since):
-      #print(f'{s["system_name"]:30} {updated}')
-      print(s["system_name"])
 
 if __name__ == '__main__':
   main()

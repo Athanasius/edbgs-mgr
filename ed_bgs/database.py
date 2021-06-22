@@ -56,7 +56,7 @@ class database(object):
       Column('system_security', Text, default=None),
     )
 
-    self.faction_presence = Table('faction_presences', self.metadata,
+    self.factions_presence = Table('factions_presence', self.metadata,
       Column('faction_id', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
@@ -66,6 +66,11 @@ class database(object):
       Column('state', Text, index=True),
       Column('influence', Float, index=True),
       Column('happiness', Text),
+      UniqueConstraint(
+        'faction_id',
+        'systemaddress',
+        name='factions_presence_tuple',
+      ),
     )
 
     # active states
@@ -192,6 +197,31 @@ class database(object):
       return result.first()._mapping['id']
 
     return None
+
+  def record_faction_presence(self, faction_id: int, data: dict):
+    """
+    Record data for given faction in a specific system.
+
+    :param faction_id: Our DB id for the faction.
+    :param data: `dict` of the data
+    """
+    data['faction_id'] = faction_id
+    with self.engine.connect() as conn:
+      stmt = insert(self.factions_presence).values(
+        data
+      ).on_conflict_do_update(
+        constraint='factions_presence_tuple',
+        set_=data
+      )
+
+      try:
+        result = conn.execute(stmt)
+
+      except sqlalchemy.exc.IntegrityError:
+        # Assume already present
+        self.logger.error('IntegrityError inserting system data')
+        return None
+
 
   def record_system(self, system_data: dict) -> Optional[int]:
     """
