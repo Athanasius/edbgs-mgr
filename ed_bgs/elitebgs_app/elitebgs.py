@@ -61,6 +61,10 @@ class EliteBGS:
 
       # Record any active states
       self.db.record_faction_active_states(faction_id, s_data['systemaddress'], [active['state'] for active in s.get('active_states', [])])
+      # Record any pending states
+      self.db.record_faction_pending_states(faction_id, s_data['systemaddress'], [pending['state'] for pending in s.get('pending_states', [])])
+      # Record any recovering states
+      self.db.record_faction_recovering_states(faction_id, s_data['systemaddress'], [recovering['state'] for recovering in s.get('recovering_states', [])])
 
     return f
 

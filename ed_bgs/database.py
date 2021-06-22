@@ -256,3 +256,59 @@ class database(object):
           )
         )
 
+  def record_faction_pending_states(self, faction_id: int, system_id: int, states: list):
+    """
+    Update database for these to be the pending states of the given faction.
+
+    :param faction_id: Our DB id of the faction.
+    :param system_id: The system if this is for.
+    :param states: List of currently pending states.
+    """
+    # We need a transaction for this
+    with self.engine.begin() as conn:
+      # First clear all the states for this (faction, system) tuple
+      conn.execute(
+        delete(self.faction_pending_states).where(
+          self.faction_pending_states.c.faction_id == faction_id
+        ).where(
+          self.faction_pending_states.c.systemaddress == system_id
+        )
+      )
+      # Now add in all of the specified ones.
+      for a_state in states:
+        conn.execute(
+          insert(self.faction_pending_states).values(
+            faction_id=faction_id,
+            systemaddress=system_id,
+            state=a_state,
+          )
+        )
+
+  def record_faction_recovering_states(self, faction_id: int, system_id: int, states: list):
+    """
+    Update database for these to be the recovering states of the given faction.
+
+    :param faction_id: Our DB id of the faction.
+    :param system_id: The system if this is for.
+    :param states: List of currently recovering states.
+    """
+    # We need a transaction for this
+    with self.engine.begin() as conn:
+      # First clear all the states for this (faction, system) tuple
+      conn.execute(
+        delete(self.faction_recovering_states).where(
+          self.faction_recovering_states.c.faction_id == faction_id
+        ).where(
+          self.faction_recovering_states.c.systemaddress == system_id
+        )
+      )
+      # Now add in all of the specified ones.
+      for a_state in states:
+        conn.execute(
+          insert(self.faction_recovering_states).values(
+            faction_id=faction_id,
+            systemaddress=system_id,
+            state=a_state,
+          )
+        )
+
