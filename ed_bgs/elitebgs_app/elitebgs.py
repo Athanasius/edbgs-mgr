@@ -130,6 +130,9 @@ class EliteBGS:
     }
     system = self.db.record_system(system_db)
 
+    # TODO: Record the 'other' side of conflicts.
+    #       The per-faction conflicts list only contains days_won, for
+    #       days_lost we need the other faction's days_won from system data.
     return system
 
   def system_conflicts(self, data: dict):
