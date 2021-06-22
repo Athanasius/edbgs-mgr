@@ -6,7 +6,8 @@ from sqlalchemy.dialects.postgresql import insert
 # from sqlalchemy.orm import Session
 # SQLAlchemy Column types
 from sqlalchemy import (
-  Column, BigInteger, Boolean, DateTime, FetchedValue, Float, ForeignKey, Integer, Sequence, Text, Sequence, Text,
+  Column, BigInteger, Boolean, DateTime, FetchedValue, Float, ForeignKey,
+  Index, Integer, Sequence, Text, Sequence, Text, UniqueConstraint
 )
 #  from sqlalchemy.sql.sqltypes import TIMESTAMP
 from typing import Optional
@@ -139,6 +140,12 @@ class database(object):
       ),
       Column(
         'conflict_type', Text,
+      ),
+      UniqueConstraint(
+        'systemaddress',
+        'faction_id',
+        'opponent_faction_id',
+        name='conflicts_unique_tuple',
       ),
     )
 
@@ -333,10 +340,10 @@ class database(object):
       }
       stmt = insert(self.conflicts).values(
         data
-      )  # .on_conflict_do_update(
-        #constraint='systems_pkey', # XXX
-        #set_=data
-      #)
+      ).on_conflict_do_update(
+        constraint='conflicts_unique_tuple',
+        set_=data
+      )
 
       try:
         result = conn.execute(stmt)
