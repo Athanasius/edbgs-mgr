@@ -24,7 +24,7 @@ config = yaml.load(__configfile, Loader=yaml.CLoader)
 os.environ['TZ'] = 'UTC'
 time.tzset()
 __default_loglevel = logging.INFO
-logger = logging.getLogger('report-wars')
+logger = logging.getLogger('systems-outdated')
 logger.setLevel(__default_loglevel)
 __logger_ch = logging.StreamHandler()
 __logger_ch.setLevel(__default_loglevel)
