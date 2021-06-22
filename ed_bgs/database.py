@@ -1,3 +1,4 @@
+import datetime
 import sqlalchemy
 from sqlalchemy import create_engine, delete, func
 from sqlalchemy import MetaData, Table
@@ -337,6 +338,7 @@ class database(object):
         'days_won': conflict['days_won'],
         'status': conflict['status'],
         'conflict_type': conflict['type'],
+        'last_updated': str(datetime.datetime.utcnow()),
       }
       stmt = insert(self.conflicts).values(
         data
