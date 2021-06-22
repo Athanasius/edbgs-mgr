@@ -138,7 +138,7 @@ class database(object):
         'status', Text,
       ),
       Column(
-        'type', Text,
+        'conflict_type', Text,
       ),
     )
 
@@ -311,4 +311,36 @@ class database(object):
             state=a_state,
           )
         )
+
+  def record_conflicts(self, faction_id: int, opponent_id: int, system_id: int, conflict: dict):
+    """
+    Record current state of a conflict for the faction in a system.
+
+    :param faction_id: Our DB id of the faction.
+    :param opponent_id: Our DB id of the opponent faction.
+    :param system_id: The system if this is for.
+    :param conflict: `dict` of conflict data from elitebgs.app API.
+    """
+    with self.engine.connect() as conn:
+      # Insert or update data for this conflict
+      stmt = insert(self.conflicts).values(
+        systemaddress=system_id,
+        faction_id=faction_id,
+        opponent_faction_id=opponent_id,
+        won_days=conflict['days_won'],
+        status=conflict['status'],
+        conflict_type=conflict['type'],
+      )  # .on_conflict_do_update(
+        #constraint='systems_pkey', # XXX
+        #set_=system_data
+      #)
+
+      try:
+        result = conn.execute(stmt)
+
+      except sqlalchemy.exc.IntegrityError:
+        # Assume already present
+        self.logger.error('IntegrityError inserting system data')
+        return None
+
 

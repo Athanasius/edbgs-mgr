@@ -66,6 +66,13 @@ class EliteBGS:
       # Record any recovering states
       self.db.record_faction_recovering_states(faction_id, s_data['systemaddress'], [recovering['state'] for recovering in s.get('recovering_states', [])])
 
+      # Conflicts
+      for c in s['conflicts']:
+        # Ensure the opponent faction is known
+        opponent_id = self.db.record_faction(c['opponent_name'])
+        # Record these details of the conflict
+        self.db.record_conflicts(faction_id, opponent_id, s_data['systemaddress'], c)
+
     return f
 
   def faction_name_only(self, faction_name: str):
