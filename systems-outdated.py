@@ -39,8 +39,12 @@ logger.addHandler(__logger_ch)
 """
 __parser = argparse.ArgumentParser()
 __parser.add_argument('--loglevel', help='set the log level to one of: DEBUG, INFO (default), WARNING, ERROR, CRITICAL')
-__parser.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
 __parser.add_argument('--age', type=int, help='How many hours ago is considered outdated.')
+
+__datasource = __parser.add_mutually_exclusive_group(required=True)
+__datasource.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
+__datasource.add_argument('--faction', help='Name of the Minor Faction to report on.')
+
 args = __parser.parse_args()
 if args.loglevel:
   level = getattr(logging, args.loglevel.upper())
@@ -55,6 +59,15 @@ def main():
     with open(args.jsonfilename, 'r', encoding='utf-8') as f:
       j = json.load(f)
       data = j['docs'][0]
+
+  elif args.faction:
+    db = ed_bgs.database(config['database']['url'], logger)
+    ebgs = ed_bgs.EliteBGS(logger, db)
+    data = ebgs.faction(args.faction)
+
+  else:
+    logger.error("No data source was specified?")
+    exit(-1)
 
   since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
   for s in data['faction_presence']:
