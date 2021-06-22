@@ -323,16 +323,19 @@ class database(object):
     """
     with self.engine.connect() as conn:
       # Insert or update data for this conflict
+      data = {
+        'systemaddress': system_id,
+        'faction_id': faction_id,
+        'opponent_faction_id': opponent_id,
+        'days_won': conflict['days_won'],
+        'status': conflict['status'],
+        'conflict_type': conflict['type'],
+      }
       stmt = insert(self.conflicts).values(
-        systemaddress=system_id,
-        faction_id=faction_id,
-        opponent_faction_id=opponent_id,
-        days_won=conflict['days_won'],
-        status=conflict['status'],
-        conflict_type=conflict['type'],
+        data
       )  # .on_conflict_do_update(
         #constraint='systems_pkey', # XXX
-        #set_=system_data
+        #set_=data
       #)
 
       try:
