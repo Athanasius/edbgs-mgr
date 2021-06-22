@@ -127,11 +127,11 @@ class database(object):
          ForeignKey('factions.id'), nullable=False
       ),
       Column(
-        'won_days', Integer,
+        'days_won', Integer,
         server_default='0'
       ),
       Column(
-        'lost_days', Integer,
+        'days_lost', Integer,
         server_default='0'
       ),
       Column(
@@ -327,7 +327,7 @@ class database(object):
         systemaddress=system_id,
         faction_id=faction_id,
         opponent_faction_id=opponent_id,
-        won_days=conflict['days_won'],
+        days_won=conflict['days_won'],
         status=conflict['status'],
         conflict_type=conflict['type'],
       )  # .on_conflict_do_update(
