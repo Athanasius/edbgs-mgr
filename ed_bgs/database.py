@@ -230,7 +230,7 @@ class database(object):
 
       except sqlalchemy.exc.IntegrityError:
         # Assume already present
-        self.logger.error('IntegrityError inserting system data')
+        self.logger.error('IntegrityError inserting faction presence data')
         return None
 
 
@@ -394,7 +394,7 @@ class database(object):
 
       except sqlalchemy.exc.IntegrityError:
         # Assume already present
-        self.logger.error('IntegrityError inserting system data')
+        self.logger.error('IntegrityError inserting conflict data')
         return None
 
   def systems_older_than(self, since: datetime.datetime):
