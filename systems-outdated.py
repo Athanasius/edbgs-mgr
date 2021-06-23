@@ -39,11 +39,16 @@ logger.addHandler(__logger_ch)
 """
 __parser = argparse.ArgumentParser()
 __parser.add_argument('--loglevel', help='set the log level to one of: DEBUG, INFO (default), WARNING, ERROR, CRITICAL')
-__parser.add_argument('--age', type=int, help='How many hours ago is considered outdated.')
+
+__age_args = __parser.add_mutually_exclusive_group(required=True)
+__age_args.add_argument('--age', type=int, help='How many hours ago is considered outdated.')
+__age_args.add_argument('--fuzz', type=int, help='How many hours to add to last tick time to use as max age.')
 
 __datasource = __parser.add_mutually_exclusive_group(required=True)
 __datasource.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
 __datasource.add_argument('--faction', help='Name of the Minor Faction to report on.')
+
+__parser.add_argument('--skip-update', action='store_true', help='Skip updating from elitebgs.app')
 
 args = __parser.parse_args()
 if args.loglevel:
@@ -53,8 +58,23 @@ if args.loglevel:
 
 
 def main():
-  hours_ago = args.age if args.age else config.get('outdated_hours', 24)
-  since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
+  db = ed_bgs.database(config['database']['url'], logger)
+  ebgs = ed_bgs.EliteBGS(logger, db)
+
+  if args.fuzz:
+    last_tick = ebgs.last_tick()
+    logger.info(f'Last tick allegedly around: {last_tick}')
+    since = last_tick + timedelta(hours=args.fuzz)
+  
+  elif args.age:
+    hours_ago = args.age if args.age else config.get('outdated_hours', 24)
+    since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
+
+  else:
+    logger.error('Neither --age or --fuzz specified')
+    exit(-1)
+
+  logger.info(f'Comparing system data age against: {since}')
 
   if args.jsonfilename:
     with open(args.jsonfilename, 'r', encoding='utf-8') as f:
@@ -69,14 +89,21 @@ def main():
         print(s["system_name"])
 
   elif args.faction:
-    db = ed_bgs.database(config['database']['url'], logger)
-    ebgs = ed_bgs.EliteBGS(logger, db)
-    data = ebgs.faction(args.faction)
+    if not args.skip_update:
+      logger.info('Updating all faction data from elitebgs.app, this can take some time ...')
+      data = ebgs.faction(args.faction)
+      logger.info('Updated  all faction data from elitebgs.app.')
+
+    else:
+      logger.info('Using current local data ...')
+
+    # Simple for now, but should get more sophisticated, i.e. taking conflicts
+    # into account with regard to how many days they've been active.
+    systems = self.db.systems_older_than(since)
 
   else:
     logger.error("No data source was specified?")
     exit(-1)
-
 
 if __name__ == '__main__':
   main()
