@@ -4,13 +4,16 @@ Mediate access to the API provided by https://elitebgs.app/
 See: https://elitebgs.app/ebgs/docs/V5/
 """
 
+import datetime
 import json
 import requests
+from dateutil.parser import isoparse
 
 class EliteBGS:
   """Access to the elitebgs.app API."""
   FACTIONS_URL = 'https://elitebgs.app/api/ebgs/v5/factions'
   SYSTEMS_URL = 'https://elitebgs.app/api/ebgs/v5/systems'
+  TICKS_URL = 'https://elitebgs.app/api/ebgs/v5/ticks'
 
   def __init__(self, logger, db):
     """
@@ -176,3 +179,23 @@ class EliteBGS:
       # Now ensure this conflict is in our DB
       conflict_id = self.db.record_conflict(c)
 
+  def last_tick(self) -> datetime.datetime:
+    """Retrieve the time of the last declared tick."""
+    try:
+      r = self.session.get(
+        self.TICKS_URL,
+      )
+
+    except requests.exceptions.HTTPError as e:
+      self.logger.warning(f'Error retrieving tick: {e!r}')
+      return None
+
+    try:
+      data = r.json()
+
+    except json.JSONDecodeError as e:
+      self.logger.warning(f'Error decoding JSON for tick: {e!r}')
+      return None
+
+    # [{"_id":"60d266ede6bdf9696a4e0cc8","time":"2021-06-22T22:15:43.000Z","updated_at":"2021-06-22T22:40:45.726Z","__v":0}]
+    return isoparse(data[0]['time'])
