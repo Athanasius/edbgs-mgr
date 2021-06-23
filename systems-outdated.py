@@ -100,6 +100,7 @@ def main():
     # Simple for now, but should get more sophisticated, i.e. taking conflicts
     # into account with regard to how many days they've been active.
     systems = db.systems_older_than(since)
+    logger.info(f'Outdated systems are:\n{systems!r}')
 
   else:
     logger.error("No data source was specified?")

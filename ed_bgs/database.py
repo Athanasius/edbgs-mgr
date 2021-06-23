@@ -54,6 +54,11 @@ class database(object):
       ),
       Column('system_government', Text, default=None),
       Column('system_security', Text, default=None),
+      Column(
+        'last_updated', DateTime,
+        server_default=func.now(),
+        server_onupdate=FetchedValue()
+      ),
     )
 
     self.factions_presences = Table('factions_presences', self.metadata,
@@ -151,6 +156,7 @@ class database(object):
         'systemaddress',
         'faction_id',
         'opponent_faction_id',
+        # TODO: We might want to have history eventually, add created ?
         name='conflicts_unique_tuple',
       ),
     )
@@ -250,6 +256,7 @@ class database(object):
         system_controlling_faction=system_data['system_controlling_faction'],
         system_government=system_data['system_government'],
         system_security=system_data['system_security'],
+        last_updated=system_data['last_updated'],
       ).on_conflict_do_update(
         constraint='systems_pkey',
         set_=system_data
@@ -390,4 +397,24 @@ class database(object):
         self.logger.error('IntegrityError inserting system data')
         return None
 
+  def systems_older_than(self, since: datetime.datetime):
+    """
+    Return a list of systems with latest data older than specified.
+
+    :param since: `datetime` of oldest data to not need updating.
+    :returns: `list` of ???
+    """
+    systems = []
+
+    with self.engine.connect() as conn:
+      stmt = self.systems.select(
+      ).where(
+        self.systems.c.last_updated < since
+      )
+
+      result = conn.execute(stmt)
+      for r in result.fetchall():
+        systems.append(r)
+
+    return systems
 

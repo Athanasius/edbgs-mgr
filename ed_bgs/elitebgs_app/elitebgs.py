@@ -151,6 +151,7 @@ class EliteBGS:
       'system_controlling_faction': controlling_faction_id,
       'system_government':          system_data['government'],
       'system_security':            system_data['security'],
+      'last_updated':               system_data['updated_at'],
     }
     system = self.db.record_system(system_db)
 
