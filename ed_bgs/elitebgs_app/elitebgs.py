@@ -102,7 +102,7 @@ class EliteBGS:
     :returns:
     """
     faction_id = self.db.record_faction(faction_name)
-    self.logger.info(f'{faction_name} is id "{faction_id}"')
+    self.logger.debug(f'{faction_name} is id "{faction_id}"')
 
     return faction_id
 
