@@ -61,7 +61,7 @@ def main():
   db = ed_bgs.database(config['database']['url'], logger)
   ebgs = ed_bgs.EliteBGS(logger, db)
 
-  if args.fuzz:
+  if args.fuzz is not None:
     last_tick = ebgs.last_tick()
     logger.info(f'Last tick allegedly around: {last_tick}')
     since = last_tick + timedelta(hours=args.fuzz)
@@ -99,7 +99,7 @@ def main():
 
     # Simple for now, but should get more sophisticated, i.e. taking conflicts
     # into account with regard to how many days they've been active.
-    systems = self.db.systems_older_than(since)
+    systems = db.systems_older_than(since)
 
   else:
     logger.error("No data source was specified?")
