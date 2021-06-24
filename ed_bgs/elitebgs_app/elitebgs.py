@@ -169,17 +169,6 @@ class EliteBGS:
     #       days_lost we need the other faction's days_won from system data.
     return system
 
-  def system_conflicts(self, data: dict):
-    """Record any conflicts data."""
-    for c in data.get('conflicts', []):
-      for f in ('faction1', 'faction2'):
-        # The faction names must exist in our DB
-        faction_id = self.db.record_faction(c[f]['name'])
-        self.logger.debug(f'Recorded conflict faction {c[f]["name"]} under id {faction_id}')
-        
-      # Now ensure this conflict is in our DB
-      conflict_id = self.db.record_conflict(c)
-
   def last_tick(self) -> datetime.datetime:
     """Retrieve the time of the last declared tick."""
     try:
