@@ -1,9 +1,13 @@
+alembic==1.6.5
 certifi==2021.5.30
 chardet==4.0.0
 greenlet==1.1.0
 idna==2.10
+Mako==1.1.4
+MarkupSafe==2.0.1
 psycopg2==2.8.6
 python-dateutil==2.8.1
+python-editor==1.0.4
 PyYAML==5.4.1
 requests==2.25.1
 six==1.16.0
