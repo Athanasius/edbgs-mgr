@@ -34,6 +34,8 @@ class EliteBGS:
     :param faction_name:
     :returns: The elitebgs.app 'document' for the faction.
     """
+    self.logger.debug('Attempting to retrieve and store all data for {faction_name}')
+
     try:
       r = self.session.get(
         f'{self.FACTIONS_URL}?name={faction_name}'
@@ -58,25 +60,44 @@ class EliteBGS:
     # First ensure all the presence data, particularly active/pending/recovering
     # states is recorded.
     for s in f['faction_presence']:
+      self.logger.debug(f'Faction "{faction_name}" - system "{s["system_name"]}"')
+
       # Ensure the system is in our database.
       s_data = self.system(s['system_name'])
 
       # Record any active states
-      self.db.record_faction_active_states(faction_id, s_data['systemaddress'], [active['state'] for active in s.get('active_states', [])])
+      self.db.record_faction_active_states(faction_id, s_data['system_address'], [active['state'] for active in s.get('active_states', [])])
       # Record any pending states
-      self.db.record_faction_pending_states(faction_id, s_data['systemaddress'], [pending['state'] for pending in s.get('pending_states', [])])
+      self.db.record_faction_pending_states(faction_id, s_data['system_address'], [pending['state'] for pending in s.get('pending_states', [])])
       # Record any recovering states
-      self.db.record_faction_recovering_states(faction_id, s_data['systemaddress'], [recovering['state'] for recovering in s.get('recovering_states', [])])
+      self.db.record_faction_recovering_states(faction_id, s_data['system_address'], [recovering['state'] for recovering in s.get('recovering_states', [])])
 
       # Conflicts
+      days_lost = None
       for c in s['conflicts']:
         # Ensure the opponent faction is known
         opponent_id = self.db.record_faction(c['opponent_name'])
+        # Extract the opponent days_won, to be our days_lost, from the
+        # system data.
+        for s_c in s_data['conflicts']:
+          if faction_name in (s_c['faction1']['name'], s_c['faction2']['name']):
+            # The faction we're processing is one side of this conflict
+            if faction_name == s_c['faction1']['name']:
+              # Other side is therefore faction2
+              days_lost = s_c['faction2']['days_won']
+
+            elif faction_name == s_c['faction2']['name']:
+              # Other side is therefore faction1
+              days_lost = s_c['faction1']['days_won']
+
+            break
+
+        if days_lost is None:
+          self.logger.error(f"Couldn't find {minor_faction} conflict in {s['system_name']} to get days_lost")
+          return None
+
         # Record these details of the conflict
-        self.db.record_conflicts(faction_id, opponent_id, s_data['systemaddress'], c)
-        # TODO: Record the 'other' side of conflicts.
-        #       The per-faction conflicts list only contains days_won, for
-        #       days_lost we need the other faction's days_won from system data.
+        self.db.record_conflicts(faction_id, opponent_id, s_data['system_address'], c, days_lost)
 
     return f
 
@@ -108,11 +129,11 @@ class EliteBGS:
     :returns:
     """
     faction_id = self.db.record_faction(faction_name)
-    self.logger.debug(f'{faction_name} is id "{faction_id}"')
+    # self.logger.debug(f'{faction_name} is id "{faction_id}"')
 
     return faction_id
 
-  def system(self, system_name: str):
+  def system(self, system_name: str) -> dict:
     """
     Retrieve, and store, available data about the specified system.
 
@@ -140,7 +161,7 @@ class EliteBGS:
 
     # Record the controlling faction
     controlling_faction_id = self.db.record_faction(system_data['controlling_minor_faction_cased'])
-    self.logger.debug(f'Recorded controlling faction {system_data["controlling_minor_faction_cased"]} under id {controlling_faction_id}')
+    # self.logger.debug(f'Recorded controlling faction {system_data["controlling_minor_faction_cased"]} under id {controlling_faction_id}')
 
     system_db = {
       'systemaddress':              system_data['system_address'],
@@ -167,7 +188,7 @@ class EliteBGS:
       )
 
 
-    return system
+    return system_data
 
   def last_tick(self) -> datetime.datetime:
     """Retrieve the time of the last declared tick."""

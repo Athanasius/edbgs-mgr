@@ -146,6 +146,7 @@ class database(object):
         'days_lost', Integer,
         server_default='0'
       ),
+      # stake_win and stake_lose ?
       Column(
         'status', Text,
       ),
@@ -362,7 +363,7 @@ class database(object):
           )
         )
 
-  def record_conflicts(self, faction_id: int, opponent_id: int, system_id: int, conflict: dict):
+  def record_conflicts(self, faction_id: int, opponent_id: int, system_id: int, conflict: dict, days_lost: int):
     """
     Record current state of a conflict for the faction in a system.
 
@@ -378,6 +379,7 @@ class database(object):
         'faction_id': faction_id,
         'opponent_faction_id': opponent_id,
         'days_won': conflict['days_won'],
+        'days_lost': days_lost,
         'status': conflict['status'],
         'conflict_type': conflict['type'],
         'last_updated': str(datetime.datetime.utcnow()),
