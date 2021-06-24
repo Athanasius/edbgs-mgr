@@ -61,6 +61,7 @@ def main():
   db = ed_bgs.database(config['database']['url'], logger)
   ebgs = ed_bgs.EliteBGS(logger, db)
 
+  tourist_systems = []
   if args.fuzz is not None:
     last_tick = ebgs.last_tick()
     logger.info(f'Last tick allegedly around: {last_tick}')
@@ -77,6 +78,7 @@ def main():
   logger.info(f'Comparing system data age against: {since}')
 
   if args.jsonfilename:
+    logger.info('Using provided static file data...')
     with open(args.jsonfilename, 'r', encoding='utf-8') as f:
       j = json.load(f)
       data = j['docs'][0]
@@ -86,7 +88,7 @@ def main():
       updated = isoparse(s['updated_at'])
       if (updated < since):
         #print(f'{s["system_name"]:30} {updated}')
-        print(s["system_name"])
+        tourist_systems.append(s['system_name'])
 
   elif args.faction:
     if not args.skip_update:
@@ -100,16 +102,20 @@ def main():
     # Simple for now, but should get more sophisticated, i.e. taking conflicts
     # into account with regard to how many days they've been active.
     systems = db.systems_older_than(since)
-    tourist_systems = []
     for s in systems:
       tourist_systems.append(s.name)
-
-    spansh = ed_bgs.Spansh(logger)
-    route_url = spansh.tourist_route('Rutena', 34.35, tourist_systems, False)
 
   else:
     logger.error("No data source was specified?")
     exit(-1)
+
+  if len(tourist_systems) > 0:
+    spansh = ed_bgs.Spansh(logger)
+    route_url = spansh.tourist_route('Rutena', 34.35, tourist_systems, False)
+
+  else:
+    logger.info('No systems to update!')
+    exit(1)
 
 if __name__ == '__main__':
   main()

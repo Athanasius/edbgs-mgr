@@ -34,4 +34,4 @@ class Spansh:
     for s in systems:
       data += f'&destination={requests.utils.requote_uri(s)}'
 
-    self.logger.info(f'data for tourist route query:\n{data}\n')
+    self.logger.debug(f'data for tourist route query:\n{data}\n')
