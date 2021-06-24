@@ -1,3 +1,4 @@
+import os
 import yaml
 
 from logging.config import fileConfig
@@ -15,17 +16,15 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+def get_ed_bgs_config():
+    """
+    Get the application config.
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
+    :return: yaml config object
+    """
+    __configfile_fd = os.open("ed-bgs_config.yaml", os.O_RDONLY)
+    __configfile = os.fdopen(__configfile_fd)
+    return yaml.load(__configfile, Loader=yaml.CLoader)
 
 def get_configured_db_url():
     """
@@ -33,11 +32,26 @@ def get_configured_db_url():
 
     :returns: `str` - sqlalchemy DB URI
     """
-    __configfile_fd = os.open("ed-bgs_config.yaml", os.O_RDONLY)
-    __configfile = os.fdopen(__configfile_fd)
-    config = yaml.load(__configfile, Loader=yaml.CLoader)
+    return ed_bgs_config['database']['url']
 
-    return config['database']['url']
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+# target_metadata = None
+import ed_bgs
+ed_bgs_config = get_ed_bgs_config()
+ed_bgs_db = ed_bgs.database(
+  get_configured_db_url(),
+  None,
+)
+target_metadata = ed_bgs_db.metadata
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -71,12 +85,12 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = engine_from_config(
-        # config.get_section(config.config_ini_section),
-        get_configured_db_url(),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    # connectable = engine_from_config(
+    #     config.get_section(config.config_ini_section),
+    #     prefix="sqlalchemy.",
+    #     poolclass=pool.NullPool,
+    # )
+    connectable = ed_bgs_db.engine
 
     with connectable.connect() as connection:
         context.configure(
