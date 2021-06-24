@@ -131,22 +131,22 @@ class database(object):
         server_onupdate=FetchedValue()
       ),
       Column(
-        'faction_id', Integer,
+        'faction1_id', Integer,
          ForeignKey('factions.id'), nullable=False
       ),
       Column(
-        'opponent_faction_id', Integer,
+        'faction2_id', Integer,
          ForeignKey('factions.id'), nullable=False
       ),
       Column(
-        'days_won', Integer,
+        'faction1_days_won', Integer,
         server_default='0'
       ),
       Column(
-        'days_lost', Integer,
+        'faction2_days_won', Integer,
         server_default='0'
       ),
-      # stake_win and stake_lose ?
+      # faction1_stake, faction2_stake
       Column(
         'status', Text,
       ),
@@ -155,8 +155,8 @@ class database(object):
       ),
       UniqueConstraint(
         'systemaddress',
-        'faction_id',
-        'opponent_faction_id',
+        'faction1_id',
+        'faction2_id',
         # TODO: We might want to have history eventually, add created ?
         name='conflicts_constraint',
       ),
@@ -363,26 +363,35 @@ class database(object):
           )
         )
 
-  def record_conflicts(self, faction_id: int, opponent_id: int, system_id: int, conflict: dict, days_lost: int):
+  def record_conflict(self, system_id: int, last_updated: str, conflict: dict):
     """
     Record current state of a conflict for the faction in a system.
 
-    :param faction_id: Our DB id of the faction.
-    :param opponent_id: Our DB id of the opponent faction.
     :param system_id: The system if this is for.
+    :param last_updated: `str` - from elitebgs.app API systems data.
     :param conflict: `dict` of conflict data from elitebgs.app API.
     """
     with self.engine.connect() as conn:
+			# We need the two factions to always be in the same order otherwise
+		  # the unique constraint won't always work.
+      if conflict['faction1']['name'] > conflict['faction2']['name']:
+        f = conflict['faction2'].copy()
+        conflict['faction2'] = conflict['faction1'].copy()
+        conflict['faction1'] = f
+
+      faction1_id = self.record_faction(conflict['faction1']['name'])
+      faction2_id = self.record_faction(conflict['faction2']['name'])
+
       # Insert or update data for this conflict
       data = {
         'systemaddress': system_id,
-        'faction_id': faction_id,
-        'opponent_faction_id': opponent_id,
-        'days_won': conflict['days_won'],
-        'days_lost': days_lost,
+        'faction1_id': faction1_id,
+        'faction2_id': faction2_id,
+        'faction1_days_won': conflict['faction1']['days_won'],
+        'faction2_days_won': conflict['faction2']['days_won'],
         'status': conflict['status'],
         'conflict_type': conflict['type'],
-        'last_updated': str(datetime.datetime.utcnow()),
+        'last_updated': last_updated,
       }
       stmt = insert(self.conflicts).values(
         data
@@ -398,6 +407,9 @@ class database(object):
         # Assume already present
         self.logger.error('IntegrityError inserting conflict data')
         return None
+
+      # TODO: Update the factions_conflicts table as well.  In fact that
+      #       should all be one transaction.
 
   def systems_older_than(self, since: datetime.datetime):
     """

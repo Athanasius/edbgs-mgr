@@ -73,31 +73,9 @@ class EliteBGS:
       self.db.record_faction_recovering_states(faction_id, s_data['system_address'], [recovering['state'] for recovering in s.get('recovering_states', [])])
 
       # Conflicts
-      days_lost = None
-      for c in s['conflicts']:
-        # Ensure the opponent faction is known
-        opponent_id = self.db.record_faction(c['opponent_name'])
-        # Extract the opponent days_won, to be our days_lost, from the
-        # system data.
-        for s_c in s_data['conflicts']:
-          if faction_name in (s_c['faction1']['name'], s_c['faction2']['name']):
-            # The faction we're processing is one side of this conflict
-            if faction_name == s_c['faction1']['name']:
-              # Other side is therefore faction2
-              days_lost = s_c['faction2']['days_won']
-
-            elif faction_name == s_c['faction2']['name']:
-              # Other side is therefore faction1
-              days_lost = s_c['faction1']['days_won']
-
-            break
-
-        if days_lost is None:
-          self.logger.error(f"Couldn't find {minor_faction} conflict in {s['system_name']} to get days_lost")
-          return None
-
-        # Record these details of the conflict
-        self.db.record_conflicts(faction_id, opponent_id, s_data['system_address'], c, days_lost)
+      for c in s_data['conflicts']:
+        # Record details of the conflict
+        self.db.record_conflict(s_data['system_address'], s_data['updated_at'], c)
 
     return f
 
