@@ -371,7 +371,7 @@ class database(object):
     :param last_updated: `str` - from elitebgs.app API systems data.
     :param conflict: `dict` of conflict data from elitebgs.app API.
     """
-    with self.engine.connect() as conn:
+    with self.engine.begin() as conn:
 			# We need the two factions to always be in the same order otherwise
 		  # the unique constraint won't always work.
       if conflict['faction1']['name'] > conflict['faction2']['name']:
@@ -402,14 +402,37 @@ class database(object):
 
       try:
         result = conn.execute(stmt)
+        conflict_id = result.inserted_primary_key[0]
 
       except sqlalchemy.exc.IntegrityError:
         # Assume already present
         self.logger.error('IntegrityError inserting conflict data')
         return None
 
-      # TODO: Update the factions_conflicts table as well.  In fact that
-      #       should all be one transaction.
+
+      # Update the factions_conflicts table as well.
+      self.record_faction_conflict(conn, faction1_id, conflict_id)
+      self.record_faction_conflict(conn, faction2_id, conflict_id)
+
+  def record_faction_conflict(self, conn, faction_id, conflict_id):
+    """
+    Record a conflict a faction is involved in.
+
+    :param conn: DB connection - we might be called within a transaction.
+    :param faction_id: Our DB id for the faction.
+    :param conflict_id: Our DB id for this conflict.
+    """
+    stmt = insert(self.factions_conflicts).values(
+      faction_id=faction_id,
+      conflict_id=conflict_id,
+    )
+
+    try:
+      result = conn.execute(stmt)
+
+    except sqlalchemy.exc.IntegrityError:
+      # Assume it was already recorded
+      pass
 
   def systems_older_than(self, since: datetime.datetime):
     """
