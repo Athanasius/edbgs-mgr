@@ -58,12 +58,15 @@ def main():
   # return None
   # Looping over monitored factions
   for f in config['monitor_factions']:
-    logger.info(f'Checking faction: {f}')
+    logger.info(f'Checking faction: {f} ...')
     # Fetch elitebgs.app data, and update in local db, for this faction
     # The deeper code takes care of recording all the necessary data to 
     # know about the systems this faction is present in, other factions
     # involved in conflicts, and conflict data.
     faction = ebgs.faction(f)
+    logger.info(f'Checking faction: {f} DONE')
+
+  logger.info('All configured factions now up to date.')
 
 if __name__ == '__main__':
   main()

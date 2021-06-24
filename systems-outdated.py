@@ -48,8 +48,6 @@ __datasource = __parser.add_mutually_exclusive_group(required=True)
 __datasource.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
 __datasource.add_argument('--faction', help='Name of the Minor Faction to report on.')
 
-__parser.add_argument('--skip-update', action='store_true', help='Skip updating from elitebgs.app')
-
 __parser.add_argument('--range', type=float, required=True, help='Ship max jump range for routing')
 __parser.add_argument('--start-system', type=str, required=True, help='Start system for tourist route')
 
@@ -94,13 +92,7 @@ def main():
         tourist_systems.append(s['system_name'])
 
   elif args.faction:
-    if not args.skip_update:
-      logger.info('Updating all faction data from elitebgs.app, this can take some time ...')
-      data = ebgs.faction(args.faction)
-      logger.info('Updated  all faction data from elitebgs.app.')
-
-    else:
-      logger.info('Using current local data ...')
+    logger.info('Using current local data ...')
 
     # Simple for now, but should get more sophisticated, i.e. taking conflicts
     # into account with regard to how many days they've been active.
