@@ -66,6 +66,7 @@ def main():
     faction = ebgs.faction(f)
     logger.info(f'Checking faction: {f} DONE')
 
+  # TODO: Expire any conflict that has ended more than a day ago
   logger.info('All configured factions now up to date.')
 
 if __name__ == '__main__':
