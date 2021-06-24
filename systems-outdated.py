@@ -50,6 +50,9 @@ __datasource.add_argument('--faction', help='Name of the Minor Faction to report
 
 __parser.add_argument('--skip-update', action='store_true', help='Skip updating from elitebgs.app')
 
+__parser.add_argument('--range', type=float, required=True, help='Ship max jump range for routing')
+__parser.add_argument('--start-system', type=str, required=True, help='Start system for tourist route')
+
 args = __parser.parse_args()
 if args.loglevel:
   level = getattr(logging, args.loglevel.upper())
@@ -111,7 +114,7 @@ def main():
 
   if len(tourist_systems) > 0:
     spansh = ed_bgs.Spansh(logger)
-    route_url = spansh.tourist_route('Rutena', 34.35, tourist_systems, False)
+    route_url = spansh.tourist_route(args.start_system, args.range, tourist_systems, False)
 
   else:
     logger.info('No systems to update!')
