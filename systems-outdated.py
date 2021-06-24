@@ -115,6 +115,7 @@ def main():
   if len(tourist_systems) > 0:
     spansh = ed_bgs.Spansh(logger)
     route_url = spansh.tourist_route(args.start_system, args.range, tourist_systems, False)
+    print(route_url)
 
   else:
     logger.info('No systems to update!')

@@ -7,6 +7,7 @@ import requests
 class Spansh:
   """Access to spansh.co.uk APIs."""
   TOURIST_URL = 'https://www.spansh.co.uk/api/tourist/route'
+  TOURIST_RESULT_PREFIX = 'https://www.spansh.co.uk/tourist/results/'
 
   def __init__(self, logger):
     """
@@ -30,8 +31,52 @@ class Spansh:
     """
     # We can't use a dict for this as we'll need to supply multiple
     # `destination` members.
-    data = f'source={start}&range={range}&loop={int(loop)}'
+    data = [
+      ('source', start),
+      ('range', range),
+      ('loop', int(loop)),
+    ]
     for s in systems:
-      data += f'&destination={requests.utils.requote_uri(s)}'
+      data.append(
+        ('destination', s)
+      )
 
-    self.logger.debug(f'data for tourist route query:\n{data}\n')
+    # self.logger.debug(f'data for tourist route query:\n{data}\n')
+
+    try:
+      r = self.session.post(
+				self.TOURIST_URL,
+        data,
+      )
+
+    except requests.exceptions.HTTPError as e:
+      self.logger.warning(f'Error requesting the route: {e!r}')
+      return None
+
+    # self.logger.debug(f'Returned data:\n{r.content.decode()}\n')
+
+    try:
+      answer = r.json()
+
+    except json.JSONDecodeError as e:
+      self.logger.warning(f'Error decoding JSON for answer: {e!r}')
+      return None
+
+    if answer.get('error', False):
+      self.logger.warning(f'spansh.co.uk replied with an error: {answer["error"]}')
+      return None
+
+    if not (status := answer.get('status', False)):
+      self.logger.warning(f"No error, but spansh.co.uk didn't give a status either:\n{r.content.decode()}\n")
+      return None
+
+    if status != 'queued':
+      self.logger.warning(f"spansh.co.uk gave a status other than queued:\n{r.content.decode()}\n")
+      return None
+
+    job = answer.get('job')
+    if job is None:
+      self.logger.warning(f"spansh.co.uk said 'queued', but gave no job ID:\n{r.content.decode()}\n")
+      return None
+
+    return f'{self.TOURIST_RESULT_PREFIX}{job}'
