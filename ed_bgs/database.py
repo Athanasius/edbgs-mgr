@@ -74,7 +74,7 @@ class database(object):
       UniqueConstraint(
         'faction_id',
         'systemaddress',
-        name='factions_presences_tuple',
+        name='factions_presences_constraint',
       ),
     )
 
@@ -157,7 +157,7 @@ class database(object):
         'faction_id',
         'opponent_faction_id',
         # TODO: We might want to have history eventually, add created ?
-        name='conflicts_unique_tuple',
+        name='conflicts_constraint',
       ),
     )
 
@@ -173,7 +173,7 @@ class database(object):
       UniqueConstraint(
         'faction_id',
         'conflict_id',
-        name='factions_conflicts_tuple',
+        name='factions_conflicts_constraint',
       ),
     )
     ######################################################################
@@ -221,7 +221,7 @@ class database(object):
       stmt = insert(self.factions_presences).values(
         data
       ).on_conflict_do_update(
-        constraint='factions_presences_tuple',
+        constraint='factions_presences_constraint',
         set_=data
       )
 
@@ -385,7 +385,7 @@ class database(object):
       stmt = insert(self.conflicts).values(
         data
       ).on_conflict_do_update(
-        constraint='conflicts_unique_tuple',
+        constraint='conflicts_constraint',
         set_=data
       )
 
