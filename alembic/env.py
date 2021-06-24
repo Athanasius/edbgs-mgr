@@ -1,3 +1,5 @@
+import yaml
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -25,6 +27,18 @@ target_metadata = None
 # ... etc.
 
 
+def get_configured_db_url():
+    """
+    Get the database URL from the application configuration.
+
+    :returns: `str` - sqlalchemy DB URI
+    """
+    __configfile_fd = os.open("ed-bgs_config.yaml", os.O_RDONLY)
+    __configfile = os.fdopen(__configfile_fd)
+    config = yaml.load(__configfile, Loader=yaml.CLoader)
+
+    return config['database']['url']
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -37,7 +51,8 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    # url = config.get_main_option("sqlalchemy.url")
+    url = get_configured_db_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -57,7 +72,8 @@ def run_migrations_online():
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        # config.get_section(config.config_ini_section),
+        get_configured_db_url(),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
