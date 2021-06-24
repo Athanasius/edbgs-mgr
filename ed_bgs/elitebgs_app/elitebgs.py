@@ -74,6 +74,9 @@ class EliteBGS:
         opponent_id = self.db.record_faction(c['opponent_name'])
         # Record these details of the conflict
         self.db.record_conflicts(faction_id, opponent_id, s_data['systemaddress'], c)
+        # TODO: Record the 'other' side of conflicts.
+        #       The per-faction conflicts list only contains days_won, for
+        #       days_lost we need the other faction's days_won from system data.
 
     return f
 
@@ -164,9 +167,6 @@ class EliteBGS:
       )
 
 
-    # TODO: Record the 'other' side of conflicts.
-    #       The per-faction conflicts list only contains days_won, for
-    #       days_lost we need the other faction's days_won from system data.
     return system
 
   def last_tick(self) -> datetime.datetime:
