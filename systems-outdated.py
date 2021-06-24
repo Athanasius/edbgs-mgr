@@ -100,8 +100,12 @@ def main():
     # Simple for now, but should get more sophisticated, i.e. taking conflicts
     # into account with regard to how many days they've been active.
     systems = db.systems_older_than(since)
+    tourist_systems = []
     for s in systems:
-      print(f'{s.name}')
+      tourist_systems.append(s.name)
+
+    spansh = ed_bgs.Spansh(logger)
+    route_url = spansh.tourist_route('Rutena', 34.35, tourist_systems, False)
 
   else:
     logger.error("No data source was specified?")
