@@ -103,15 +103,26 @@ def main():
     # the last known tick + fuzz.
     systems = db.systems_conflicts_older_than(since, faction_id=faction_id)
     for s in systems:
-      logger.info(f'Adding system because of on-going conflict: {s.name}')
+      logger.debug(f'Adding system because of on-going conflict: {s.name}')
       tourist_systems.append(s.name)
 
     # Anywhere that was last seen with 'close' inf% to another MF and not
     # updated this tick.
 
-    #systems = db.systems_older_than(since)
-    #for s in systems:
-      #tourist_systems.append(s.name)
+    # How many days could a system go until we could *just* pull back a
+    # conflict we're losing?
+    #
+    # 5: Last Data
+    # 4: Conflict goes Pending
+    # 3: Lost Day 1
+    # 2: Lost Day 2
+    # 1: Lost Day 3
+    # 0: <today>
+    since = last_tick - timedelta(days=5)
+    systems = db.systems_older_than(since)
+    for s in systems:
+      logger.debug(f'Adding system because too old: {s.name}')
+      tourist_systems.append(s.name)
 
   else:
     logger.error("No data source was specified?")
