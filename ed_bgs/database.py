@@ -508,6 +508,8 @@ class database(object):
         self.conflicts.c.systemaddress
       ).where(
         self.conflicts.c.last_updated < since
+      ).where(
+        self.conflicts.c.status != ''
       )
 
       if faction_id is not None:
