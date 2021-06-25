@@ -63,10 +63,10 @@ class database(object):
 
     self.factions_presences = Table('factions_presences', self.metadata,
       Column('faction_id', Integer,
-        ForeignKey('factions.id'), nullable=False, index=True,
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('systemaddress', BigInteger,
-        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+        ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, index=True),
       Column('influence', Float, index=True),
@@ -81,20 +81,20 @@ class database(object):
     # active states
     self.factions_active_states = Table('factions_active_states', self.metadata,
       Column('faction_id', Integer,
-        ForeignKey('factions.id'), nullable=False, index=True,
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('systemaddress', BigInteger,
-        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+        ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, nullable=False),
     )
     # pending states
     self.factions_pending_states = Table('factions_pending_states', self.metadata,
       Column('faction_id', Integer,
-        ForeignKey('factions.id'), nullable=False, index=True,
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('systemaddress', BigInteger,
-        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+        ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, nullable=False),
       Column('trend', Integer),
@@ -102,10 +102,10 @@ class database(object):
     # recovering states
     self.factions_recovering_states = Table('factions_recovering_states', self.metadata,
       Column('faction_id', Integer,
-        ForeignKey('factions.id'), nullable=False, index=True,
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('systemaddress', BigInteger,
-        ForeignKey('systems.systemaddress'), nullable=False, index=True,
+        ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, nullable=False),
       Column('trend', Integer),
@@ -119,7 +119,7 @@ class database(object):
       ),
       Column(
         'systemaddress', BigInteger,
-         ForeignKey('systems.systemaddress'), nullable=False
+         ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'created', DateTime,
@@ -132,11 +132,11 @@ class database(object):
       ),
       Column(
         'faction1_id', Integer,
-         ForeignKey('factions.id'), nullable=False
+         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'faction2_id', Integer,
-         ForeignKey('factions.id'), nullable=False
+         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'faction1_days_won', Integer,
@@ -165,11 +165,11 @@ class database(object):
     self.factions_conflicts = Table('factions_conflicts', self.metadata,
       Column(
         'faction_id', Integer,
-         ForeignKey('factions.id'), nullable=False
+         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'conflict_id', Integer,
-         ForeignKey('conflicts.id'), nullable=False
+         ForeignKey('conflicts.id', ondelete='CASCADE'), nullable=False
       ),
       UniqueConstraint(
         'faction_id',
@@ -439,6 +439,18 @@ class database(object):
     # For every conflict we know
     ## Expire if in cooldown and older than a day.
     ## Anything else just needs updated data.
+    one_day_ago = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    with self.engine.begin() as conn:
+      stmt = delete(self.conflicts).where(
+        self.conflicts.c.status == ''
+      ).where(
+        self.conflicts.c.last_updated < one_day_ago
+      )
+
+      result = conn.execute(stmt)
+
+      conn.rollback()
+      return result.rowcount
 
   def systems_older_than(self, since: datetime.datetime):
     """
