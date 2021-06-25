@@ -477,6 +477,7 @@ class database(object):
     :param since: `datetime` of oldest data to not need updating.
     :returns: `list` of system rows
     """
+    self.logger.debug(f'Finding systems older than {since}')
     systems = []
 
     with self.engine.connect() as conn:

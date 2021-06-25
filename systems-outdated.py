@@ -118,8 +118,9 @@ def main():
     # 2: Lost Day 2
     # 1: Lost Day 3
     # 0: <today>
-    since = last_tick - timedelta(days=5)
-    systems = db.systems_older_than(since)
+    ticks = ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=6))
+    since = ticks[3]
+    systems = db.systems_older_than(since + timedelta(hours=args.tick_plus))
     for s in systems:
       logger.debug(f'Adding system because too old: {s.name}')
       tourist_systems.append(s.name)

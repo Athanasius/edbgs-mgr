@@ -188,3 +188,36 @@ class EliteBGS:
 
     # [{"_id":"60d266ede6bdf9696a4e0cc8","time":"2021-06-22T22:15:43.000Z","updated_at":"2021-06-22T22:40:45.726Z","__v":0}]
     return isoparse(data[0]['time'])
+
+  def ticks_since(self, since: datetime.datetime) -> list:
+    """
+    Retrieve the ticks since given datetime.
+    
+    :param since: Oldest time of ticks to consider.
+    :return: `list` of `datetime.datetime`.
+    """
+    timemin = int(since.timestamp()) * 1000
+    url = f'{self.TICKS_URL}?timeMin={timemin}'
+    try:
+      r = self.session.get(
+        url,
+      )
+
+    except requests.exceptions.HTTPError as e:
+      self.logger.warning(f'Error retrieving ticks: {e!r}')
+      return None
+
+    try:
+      data = r.json()
+
+    except json.JSONDecodeError as e:
+      self.logger.warning(f'Error decoding JSON for ticks: {e!r}')
+      return None
+
+    ticks = []
+    for t in data:
+      ticks.append(isoparse(t['time']))
+
+    # self.logger.debug(f'Returning ticks:\n{ticks}\n')
+    return ticks
+
