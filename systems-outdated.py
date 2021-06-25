@@ -28,7 +28,7 @@ logger = logging.getLogger('systems-outdated')
 logger.setLevel(__default_loglevel)
 __logger_ch = logging.StreamHandler()
 __logger_ch.setLevel(__default_loglevel)
-__logger_formatter = logging.Formatter('%(asctime)s; %(name)s; %(levelname)s; %(module)s.%(funcName)s: %(message)s')
+__logger_formatter = logging.Formatter('%(asctime)s; %(name)s; %(levelname)s; %(module)s.%(funcName)s:%(lineno)s %(message)s')
 __logger_formatter.default_time_format = '%Y-%m-%d %H:%M:%S';
 __logger_formatter.default_msec_format = '%s.%03d'
 __logger_ch.setFormatter(__logger_formatter)
@@ -101,18 +101,23 @@ def main():
 
     # Anywhere we know there was a conflict already and not updated since
     # the last known tick + fuzz.
+    systems = db.systems_conflicts_older_than(since, faction_id=faction_id)
+    for s in systems:
+      logger.info(f'Adding system because of on-going conflict: {s.name}')
+      tourist_systems.append(s.name)
 
     # Anywhere that was last seen with 'close' inf% to another MF and not
     # updated this tick.
 
-    systems = db.systems_older_than(since)
-    for s in systems:
-      tourist_systems.append(s.name)
+    #systems = db.systems_older_than(since)
+    #for s in systems:
+      #tourist_systems.append(s.name)
 
   else:
     logger.error("No data source was specified?")
     exit(-1)
 
+  exit(0)
   if len(tourist_systems) > 0:
     spansh = ed_bgs.Spansh(logger)
     route_url = spansh.tourist_route(args.start_system, args.range, tourist_systems, False)

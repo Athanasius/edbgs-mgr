@@ -1,6 +1,6 @@
 import datetime
 import sqlalchemy
-from sqlalchemy import create_engine, delete, func
+from sqlalchemy import create_engine, delete, func, or_
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import insert
@@ -470,13 +470,12 @@ class database(object):
 
       return result.rowcount
 
-  # SELECT * FROM conflicts WHERE ( faction1_id = 1 OR faction2_id = 1 ) AND status != '' AND last_updated < TIMESTAMP '2021-06-24 23:22:00Z';
   def systems_older_than(self, since: datetime.datetime):
     """
     Return a list of systems with latest data older than specified.
 
     :param since: `datetime` of oldest data to not need updating.
-    :returns: `list` of ???
+    :returns: `list` of system rows
     """
     systems = []
 
@@ -492,3 +491,47 @@ class database(object):
 
     return systems
 
+  def systems_conflicts_older_than(self, since: datetime.datetime, faction_id: int = None) -> list:
+    """
+    Return a list of systems with conflicts with data older than specified.
+
+    :param since: `datetime` of oldest data to not need updating.
+    :param faction_id: Faction ID to limit involved to, if specified.
+    :returns: `list` of system rows
+    """
+    systems = []
+
+    with self.engine.connect() as conn:
+      # SELECT name FROM systems WHERE systemaddress IN (SELECT systemaddress FROM conflicts WHERE ( faction1_id = 1 OR faction2_id = 1 ) AND status != '' AND last_updated < TIMESTAMP '2021-06-24 23:22:00Z');
+      inner_stmt = self.conflicts.select(
+      ).with_only_columns(
+        self.conflicts.c.systemaddress
+      ).where(
+        self.conflicts.c.last_updated < since
+      )
+
+      if faction_id is not None:
+        inner_stmt = inner_stmt.where(
+          or_(
+            self.conflicts.c.faction1_id == faction_id,
+            self.conflicts.c.faction2_id == faction_id
+          )
+        )
+
+      # self.logger.debug(f'Statement:\n{inner_stmt.whereclause}\n')
+
+      stmt = self.systems.select(
+      ).with_only_columns(
+        self.systems.c.name
+      ).where(
+        self.systems.c.systemaddress.in_(
+          inner_stmt
+        )
+      )
+      # self.logger.debug(f'Statement:\n{stmt.whereclause}\n')
+
+      result = conn.execute(stmt)
+      for r in result.fetchall():
+        systems.append(r)
+
+    return systems
