@@ -425,7 +425,7 @@ class database(object):
     stmt = insert(self.factions_conflicts).values(
       faction_id=faction_id,
       conflict_id=conflict_id,
-    )
+    ).on_conflict_do_nothing()
 
     try:
       result = conn.execute(stmt)
@@ -433,6 +433,12 @@ class database(object):
     except sqlalchemy.exc.IntegrityError:
       # Assume it was already recorded
       pass
+
+  def expire_conflicts(self) -> int:
+    """Remove data for any conflicts that have expired."""
+    # For every conflict we know
+    ## Expire if in cooldown and older than a day.
+    ## Anything else just needs updated data.
 
   def systems_older_than(self, since: datetime.datetime):
     """
