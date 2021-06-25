@@ -42,7 +42,7 @@ __parser.add_argument('--loglevel', help='set the log level to one of: DEBUG, IN
 
 __age_args = __parser.add_mutually_exclusive_group(required=True)
 __age_args.add_argument('--age', type=int, help='How many hours ago is considered outdated.')
-__age_args.add_argument('--fuzz', type=int, help='How many hours to add to last tick time to use as max age.')
+__age_args.add_argument('--tick-plus', type=int, help='How many hours to add to last tick time to use as max age.')
 
 __datasource = __parser.add_mutually_exclusive_group(required=True)
 __datasource.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
@@ -63,17 +63,17 @@ def main():
   ebgs = ed_bgs.EliteBGS(logger, db)
 
   tourist_systems = []
-  if args.fuzz is not None:
+  if args.tick_plus is not None:
     last_tick = ebgs.last_tick()
     logger.info(f'Last tick allegedly around: {last_tick}')
-    since = last_tick + timedelta(hours=args.fuzz)
+    since = last_tick + timedelta(hours=args.tick-plus)
   
   elif args.age:
     hours_ago = args.age if args.age else config.get('outdated_hours', 24)
     since = datetime.now(tz=timezone.utc) - timedelta(hours=hours_ago)
 
   else:
-    logger.error('Neither --age or --fuzz specified')
+    logger.error('Neither --age or --tick-plus specified')
     exit(-1)
 
   logger.info(f'Comparing system data age against: {since}')
@@ -94,6 +94,8 @@ def main():
   elif args.faction:
     logger.info('Using current local data ...')
 
+    # Anywhere we know there was a conflict already and not updated since
+    # the last known tick + fuzz.
     # Simple for now, but should get more sophisticated, i.e. taking conflicts
     # into account with regard to how many days they've been active.
     systems = db.systems_older_than(since)
