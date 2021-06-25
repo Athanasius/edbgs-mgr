@@ -95,6 +95,10 @@ def main():
     logger.info('Using current local data ...')
 
     faction_id = db.faction_id_from_name(args.faction)
+    if faction_id is None:
+      logger.error(f'Unknown faction: {args.faction} - CASE MATTERS!')
+      exit(-3)
+
     # Anywhere we know there was a conflict already and not updated since
     # the last known tick + fuzz.
 
