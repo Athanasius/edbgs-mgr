@@ -63,10 +63,10 @@ def main():
     # The deeper code takes care of recording all the necessary data to 
     # know about the systems this faction is present in, other factions
     # involved in conflicts, and conflict data.
-    # faction = ebgs.faction(f)
+    faction = ebgs.faction(f)
     logger.info(f'Checking faction: {f} DONE')
 
-  # TODO: Expire any conflict that has ended more than a day ago
+  # Expire any conflict that has ended more than a day ago
   ec = db.expire_conflicts()
   logger.info(f'Expired {ec} conflicts.')
 

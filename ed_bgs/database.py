@@ -449,7 +449,6 @@ class database(object):
 
       result = conn.execute(stmt)
 
-      conn.rollback()
       return result.rowcount
 
   def systems_older_than(self, since: datetime.datetime):
