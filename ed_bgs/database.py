@@ -434,6 +434,25 @@ class database(object):
       # Assume it was already recorded
       pass
 
+  def faction_id_from_name(self, faction_name: str) -> int:
+    """Fetch our faction_id for the named faction.
+
+    :param faction_name: `str` - faction of interest.
+    :returns: `int` - Our DB ID for this faction.
+    """
+    with self.engine.connect() as conn:
+      stmt = self.factions.select(
+      ).where(
+        self.factions.c.name == faction_name
+      )
+
+      result = conn.execute(stmt)
+
+      if result.rowcount != 1:
+        return None
+
+      return result.first()['id']
+
   def expire_conflicts(self) -> int:
     """Remove data for any conflicts that have expired."""
     # For every conflict we know
@@ -451,6 +470,7 @@ class database(object):
 
       return result.rowcount
 
+  # SELECT * FROM conflicts WHERE ( faction1_id = 1 OR faction2_id = 1 ) AND status != '' AND last_updated < TIMESTAMP '2021-06-24 23:22:00Z';
   def systems_older_than(self, since: datetime.datetime):
     """
     Return a list of systems with latest data older than specified.

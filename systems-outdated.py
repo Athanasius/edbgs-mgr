@@ -66,7 +66,7 @@ def main():
   if args.tick_plus is not None:
     last_tick = ebgs.last_tick()
     logger.info(f'Last tick allegedly around: {last_tick}')
-    since = last_tick + timedelta(hours=args.tick-plus)
+    since = last_tick + timedelta(hours=args.tick_plus)
   
   elif args.age:
     hours_ago = args.age if args.age else config.get('outdated_hours', 24)
@@ -94,10 +94,13 @@ def main():
   elif args.faction:
     logger.info('Using current local data ...')
 
+    faction_id = db.faction_id_from_name(args.faction)
     # Anywhere we know there was a conflict already and not updated since
     # the last known tick + fuzz.
-    # Simple for now, but should get more sophisticated, i.e. taking conflicts
-    # into account with regard to how many days they've been active.
+
+    # Anywhere that was last seen with 'close' inf% to another MF and not
+    # updated this tick.
+
     systems = db.systems_older_than(since)
     for s in systems:
       tourist_systems.append(s.name)
