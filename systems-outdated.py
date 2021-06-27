@@ -68,7 +68,7 @@ if args.loglevel:
 def main():
   db = ed_bgs.database(config['database']['url'], logger)
   ebgs = ed_bgs.EliteBGS(logger, db)
-  bgs = ed_bgs.BGS(logger, db)
+  bgs = ed_bgs.BGS(logger, db, ebgs)
 
   tourist_systems = []
   if args.tick_plus is not None:
@@ -111,27 +111,10 @@ def main():
       tourist_systems.extend(bgs.active_conflicts_needing_update(faction_id, since))
 
     if args.possible_losing_conflicts:
-      # Anywhere that was last seen with 'close' inf% to another MF and not
-      # updated this tick.
+      tourist_systems.extend(bgs.possible_losing_conflicts(since, faction_id=faction_id, tick_plus=args.tick_plus))
 
-      # How many days could a system go until we could *just* pull back a
-      # conflict we're losing?
-      #
-			# Days Ago   State        (Tick) Time  Tick
-			#       0    ?            08:42        0 (assuming update after)
-			#       1    0:3          23:00        1
-			#       2    0:2          22:55        2
-			#       3    0:1          22:57        3
-			#       4    0:0          23:05        4
-			#       5    pending      22:50        5
-			#       6    <none/other> 22:45        6
-
-      ticks = ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=7))
-      since = ticks[5]
-      systems = db.systems_older_than(since + timedelta(hours=args.tick_plus))
-      for s in systems:
-        logger.debug(f'Adding system because we could now be losing 0:3 in unknown conflict: {s.name}')
-        tourist_systems.append(s.name)
+    # Anywhere that was last seen with 'close' inf% to another MF and not
+    # updated this tick.
 
   else:
     logger.error("No data source was specified?")
