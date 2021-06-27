@@ -48,9 +48,11 @@ __datasource = __parser.add_mutually_exclusive_group(required=True)
 __datasource.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
 __datasource.add_argument('--faction', help='Name of the Minor Faction to report on.')
 
+# Selection of heuristics
+__parser.add_argument('--conflicts', action='store_true', help='Consider any system with a known conflict')
+
 __spansh_sub = __parser.add_subparsers(title='Optional commands', description='Additional commands that may allow, or require, additional arguments.')
 __spansh = __spansh_sub.add_parser('spansh-route', help='Generate a spansh tourist route, requires additional arguments.')
-#__spansh.add_argument('--spansh-route', action='store_true', help='Generate a spansh tourist route')
 __spansh.add_argument('--range', type=float, required=True, help='Ship max jump range for routing')
 __spansh.add_argument('--start-system', type=str, required=True, help='Start system for tourist route')
 
@@ -103,12 +105,13 @@ def main():
       logger.error(f'Unknown faction: {args.faction} - CASE MATTERS!')
       exit(-3)
 
-    # Anywhere we know there was a conflict already and not updated since
-    # the last known tick + fuzz.
-    systems = db.systems_conflicts_older_than(since, faction_id=faction_id)
-    for s in systems:
-      logger.debug(f'Adding system because of on-going conflict: {s.name}')
-      tourist_systems.append(s.name)
+    if args.conflicts:
+      # Anywhere we know there was a conflict already and not updated since
+      # the last known tick + fuzz.
+      systems = db.systems_conflicts_older_than(since, faction_id=faction_id)
+      for s in systems:
+        logger.debug(f'Adding system because of on-going conflict: {s.name}')
+        tourist_systems.append(s.name)
 
     # Anywhere that was last seen with 'close' inf% to another MF and not
     # updated this tick.
