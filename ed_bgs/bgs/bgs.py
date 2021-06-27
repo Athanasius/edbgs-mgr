@@ -66,6 +66,10 @@ class BGS:
     """
     Determine systems with data stale enough to be in danger of a conflict.
 
+    Assumptions:
+
+      1. The target faction itself won't have changed in influence.
+
     :param faction_id: Our DB id of the faction of interest.
     :param since: `datetime.datetime` of newest data that's OK.
     :returns: list of system names.
@@ -84,13 +88,15 @@ class BGS:
 
     # Now for each of those systems
     for s in systems:
-      # How many ticks since this system was update ?
-      oldest_updated = s.last_updated.astimezone(tz=timezone.utc)
-      ticks_since = self.ticks_since(ticks, oldest_updated)
+      # How many ticks since this system was updated ?
+      ticks_since = self.ticks_since(ticks, s.last_updated.astimezone(tz=timezone.utc))
 
       # We need the inf% of all the factions in that system
       factions = self.db.system_factions_data(s.systemaddress)
+
+      # Find the data for the target faction
       f_faction = next(filter(lambda f: f.faction_id == faction_id, factions))
+
       if f_faction.influence < 7.0:
         # If interest-faction is below 7% ? it can't get into conflicts.
         break
@@ -101,7 +107,6 @@ class BGS:
       #      have been brought up to match the faction of interest.
       for f in factions:
         if f.faction_id == faction_id:
-          f_faction = f
 
           if prev is not None:
             # Are we too close to this faction, given the ticks that have passed ?
