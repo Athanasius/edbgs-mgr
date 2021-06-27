@@ -120,6 +120,9 @@ def main():
     logger.error("No data source was specified?")
     exit(-1)
 
+  # De-dupe tourist_systems
+  tourist_systems = set(tourist_systems)
+
   if len(tourist_systems) > 0:
     if hasattr(args, 'range') and hasattr(args, 'start_system'):
       spansh = ed_bgs.Spansh(logger)
