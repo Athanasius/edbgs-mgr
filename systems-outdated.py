@@ -129,7 +129,7 @@ def main():
     logger.error("No data source was specified?")
     exit(-1)
 
-  exit(0)
+  # exit(0)
   if len(tourist_systems) > 0:
     spansh = ed_bgs.Spansh(logger)
     route_url = spansh.tourist_route(args.start_system, args.range, tourist_systems, False)
