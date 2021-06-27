@@ -49,7 +49,8 @@ __datasource.add_argument('--jsonfilename', help='Name of file containing eliteb
 __datasource.add_argument('--faction', help='Name of the Minor Faction to report on.')
 
 # Selection of heuristics
-__parser.add_argument('--conflicts', action='store_true', help='Consider any system with a known conflict')
+__parser.add_argument('--active-conflicts', action='store_true', help='Consider any system with a known conflict.')
+__parser.add_argument('--possible-losing-conflicts', action='store_true', help='Consider any system so old we could now be in a 0:3 conflict state.')
 
 __spansh_sub = __parser.add_subparsers(title='Optional commands', description='Additional commands that may allow, or require, additional arguments.')
 __spansh = __spansh_sub.add_parser('spansh-route', help='Generate a spansh tourist route, requires additional arguments.')
@@ -105,7 +106,7 @@ def main():
       logger.error(f'Unknown faction: {args.faction} - CASE MATTERS!')
       exit(-3)
 
-    if args.conflicts:
+    if args.active_conflicts:
       # Anywhere we know there was a conflict already and not updated since
       # the last known tick + fuzz.
       systems = db.systems_conflicts_older_than(since, faction_id=faction_id)
@@ -113,24 +114,25 @@ def main():
         logger.debug(f'Adding system because of on-going conflict: {s.name}')
         tourist_systems.append(s.name)
 
-    # Anywhere that was last seen with 'close' inf% to another MF and not
-    # updated this tick.
+    if args.possible_losing_conflicts:
+      # Anywhere that was last seen with 'close' inf% to another MF and not
+      # updated this tick.
 
-    # How many days could a system go until we could *just* pull back a
-    # conflict we're losing?
-    #
-    # 5: Last Data
-    # 4: Conflict goes Pending
-    # 3: Lost Day 1
-    # 2: Lost Day 2
-    # 1: Lost Day 3
-    # 0: <today>
-    ticks = ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=6))
-    since = ticks[3]
-    systems = db.systems_older_than(since + timedelta(hours=args.tick_plus))
-    for s in systems:
-      logger.debug(f'Adding system because too old: {s.name}')
-      tourist_systems.append(s.name)
+      # How many days could a system go until we could *just* pull back a
+      # conflict we're losing?
+      #
+      # 5: Last Data
+      # 4: Conflict goes Pending
+      # 3: Lost Day 1
+      # 2: Lost Day 2
+      # 1: Lost Day 3
+      # 0: <today>
+      ticks = ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=6))
+      since = ticks[3]
+      systems = db.systems_older_than(since + timedelta(hours=args.tick_plus))
+      for s in systems:
+        logger.debug(f'Adding system because we could now be losing 0:3 in unknown conflict: {s.name}')
+        tourist_systems.append(s.name)
 
   else:
     logger.error("No data source was specified?")
