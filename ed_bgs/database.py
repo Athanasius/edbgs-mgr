@@ -495,7 +495,7 @@ class database(object):
 
       return result.rowcount
 
-  def systems_older_than(self, since: datetime.datetime, faction_id=None):
+  def systems_older_than(self, since: datetime.datetime, faction_id: int = None) -> list:
     """
     Return a list of systems with latest data older than specified.
 
