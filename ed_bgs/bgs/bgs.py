@@ -36,12 +36,13 @@ class BGS:
     Determine systems that might now be in 0:3 losing state in need of new data.
 
     :param faction_id: Optional faction to filter on.
+    :param faction_id: Optional faction to filter systems for presence.
     :returns: list of system names.
     """
     # How many days could a system go until we could *just* pull back a
     # conflict we're losing?
     #
-    # Days Ago   State        (Tick) Time  Tick
+    # Days Ago   State        (Tick) Time  Applicable Tick
     #       0    ?            08:42        0 (assuming update after)
     #       1    0:3          23:00        1
     #       2    0:2          22:55        2
@@ -50,9 +51,10 @@ class BGS:
     #       5    pending      22:50        5
     #       6    <none/other> 22:45        6
     ticks = self.ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=7))
+    # Older than the oldest possible pending is what we want
     since = ticks[5]
 
-    systems = self.db.systems_older_than(since + timedelta(hours=tick_plus))
+    systems = self.db.systems_older_than(since + timedelta(hours=tick_plus), faction_id=faction_id)
     to_update = []
     for s in systems:
       logger.debug(f'Adding system because faction could now be losing 0:3 in unknown conflict: {s.name}')

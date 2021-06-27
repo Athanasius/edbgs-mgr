@@ -495,22 +495,37 @@ class database(object):
 
       return result.rowcount
 
-  def systems_older_than(self, since: datetime.datetime):
+  def systems_older_than(self, since: datetime.datetime, faction_id=None):
     """
     Return a list of systems with latest data older than specified.
 
     :param since: `datetime` of oldest data to not need updating.
+    :param faction_id: Optional faction to filter systems for presence.
     :returns: `list` of system rows
     """
     # self.logger.debug(f'Finding systems older than {since}')
     systems = []
 
     with self.engine.connect() as conn:
-      stmt = self.systems.select(
-      ).where(
+      stmt = self.systems.select()
+
+      if faction_id is not None:
+        stmt = stmt.where(
+          self.systems.c.systemaddress.in_(
+            self.factions_presences.select(
+            ).with_only_columns(
+              self.factions_presences.c.systemaddress
+            ).where(
+              self.factions_presences.c.faction_id == faction_id
+            )
+          )
+        )
+
+      stmt = stmt.where(
         self.systems.c.last_updated < since
       )
 
+      self.logger.debug(f'Statement:\n{str(stmt)}\n')
       result = conn.execute(stmt)
       for r in result.fetchall():
         systems.append(r)
