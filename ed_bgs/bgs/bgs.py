@@ -81,23 +81,22 @@ class BGS:
     # thus the first one has the oldest data.  So use that to get ticks *once*
     # for use in the loop below.
     ticks = self.ebgs.ticks_since(systems[0].last_updated.astimezone(tz=timezone.utc))
-    # They come back as latest first, we want oldest first for this.
-    # ticks.reverse()
 
     # Now for each of those systems
     for s in systems:
-      # TODO: If interest-faction is below 7% ? it can't get into conflicts.
-
       # How many ticks since this system was update ?
       oldest_updated = s.last_updated.astimezone(tz=timezone.utc)
       ticks_since = self.ticks_since(ticks, oldest_updated)
 
       # We need the inf% of all the factions in that system
       factions = self.db.system_factions_data(s.systemaddress)
+      f_faction = next(filter(lambda f: f.faction_id == faction_id, factions))
+      if f_faction.influence < 7.0:
+        # If interest-faction is below 7% ? it can't get into conflicts.
+        break
 
       # Now to check if the faction of interest could now be in a conflict.
       prev = None
-      f_faction = None
       # XXX: Actually *worst* case is if *any* of the other factions could
       #      have been brought up to match the faction of interest.
       for f in factions:
