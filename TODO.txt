@@ -169,6 +169,15 @@ tick-data(nothing)-tick-(war pending)-tick-active
 -tick-0:1-tick-0:2-tick-0:3-tick:0:4
 So up to 5 days out of date is salvagable, assuming you detect pending
 wars.
+
+Days Ago   State	(Tick) Time	Tick
+      0	   ?            08:42		0 (assuming update after)
+      1    0:3          23:00		1
+      2    0:2          22:55		2
+      3    0:1		22:57		3
+      4    0:0		23:05		4
+      5    pending	22:50		5
+      6    <none/other> 22:45		6
 -  Economic State  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Systems that need work
 -  Security State  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

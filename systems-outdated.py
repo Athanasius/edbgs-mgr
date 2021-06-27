@@ -68,6 +68,7 @@ if args.loglevel:
 def main():
   db = ed_bgs.database(config['database']['url'], logger)
   ebgs = ed_bgs.EliteBGS(logger, db)
+  bgs = ed_bgs.BGS(logger, db)
 
   tourist_systems = []
   if args.tick_plus is not None:
@@ -107,12 +108,7 @@ def main():
       exit(-3)
 
     if args.active_conflicts:
-      # Anywhere we know there was a conflict already and not updated since
-      # the last known tick + fuzz.
-      systems = db.systems_conflicts_older_than(since, faction_id=faction_id)
-      for s in systems:
-        logger.debug(f'Adding system because of on-going conflict: {s.name}')
-        tourist_systems.append(s.name)
+      tourist_systems.extend(bgs.active_conflicts_needing_update(faction_id, since))
 
     if args.possible_losing_conflicts:
       # Anywhere that was last seen with 'close' inf% to another MF and not
@@ -121,14 +117,17 @@ def main():
       # How many days could a system go until we could *just* pull back a
       # conflict we're losing?
       #
-      # 5: Last Data
-      # 4: Conflict goes Pending
-      # 3: Lost Day 1
-      # 2: Lost Day 2
-      # 1: Lost Day 3
-      # 0: <today>
-      ticks = ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=6))
-      since = ticks[3]
+			# Days Ago   State        (Tick) Time  Tick
+			#       0    ?            08:42        0 (assuming update after)
+			#       1    0:3          23:00        1
+			#       2    0:2          22:55        2
+			#       3    0:1          22:57        3
+			#       4    0:0          23:05        4
+			#       5    pending      22:50        5
+			#       6    <none/other> 22:45        6
+
+      ticks = ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=7))
+      since = ticks[5]
       systems = db.systems_older_than(since + timedelta(hours=args.tick_plus))
       for s in systems:
         logger.debug(f'Adding system because we could now be losing 0:3 in unknown conflict: {s.name}')
