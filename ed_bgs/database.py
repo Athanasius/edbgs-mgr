@@ -527,7 +527,7 @@ class database(object):
         self.systems.c.last_updated.asc()
       )
 
-      self.logger.debug(f'Statement:\n{str(stmt)}\n')
+      # self.logger.debug(f'Statement:\n{str(stmt)}\n')
       result = conn.execute(stmt)
       for r in result.fetchall():
         systems.append(r)
@@ -596,6 +596,6 @@ class database(object):
         self.factions_presences.c.influence.asc()
       )
 
-      self.logger.debug(f'Statement:\n{str(stmt)}\n')
+      # self.logger.debug(f'Statement:\n{str(stmt)}\n')
       return conn.execute(stmt).all()
 

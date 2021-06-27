@@ -88,6 +88,8 @@ class BGS:
 
     # Now for each of those systems
     for s in systems:
+      self.logger.debug(f'Considering system:\n{s.name}')
+
       # How many ticks since this system was updated ?
       ticks_since = self.ticks_since(ticks, s.last_updated.astimezone(tz=timezone.utc))
 
@@ -97,43 +99,34 @@ class BGS:
       # Find the data for the target faction
       f_faction = next(filter(lambda f: f.faction_id == faction_id, factions))
 
-      if f_faction.influence < 7.0:
+      if f_faction.influence < 0.07:
         # If interest-faction is below 7% ? it can't get into conflicts.
         break
 
       # Now to check if the faction of interest could now be in a conflict.
-      prev = None
-      # XXX: Actually *worst* case is if *any* of the other factions could
-      #      have been brought up to match the faction of interest.
       for f in factions:
         if f.faction_id == faction_id:
+          continue
 
-          if prev is not None:
-            # Are we too close to this faction, given the ticks that have passed ?
-            # This is a *very* rough guesstimate of how much the other faction's
-            # influence could have increased.  It could be more than 5% if
-            # they started very low, or much less if they started higher.
-            # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/>
-            # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/page-6#post-8319830>
-            possible_prev_inf = prev.influence + ticks_since * 5.0
-            if abs(f_faction.influence - possible_prev_inf) < 5.0:
-              self.logger.debug(f"""System '{s.name}' ({s.systemaddress})
-Previous Faction: {prev.faction_id} - {prev.influence}
-Interest Faction: {f_faction.faction_id} - {f_faction.influence}
-""")
-              to_update.append(s)
-              break
+        self.logger.debug(f'Considering faction:\n{f.faction_id}')
+
+        if f.influence < f_faction.influence:
+          # It's below 'us', so what *could* it be now ?
+          # TODO: Need to step day by day in case of an overshoot.
+          possible_inf = self.influence_could_be(f.influence, ticks_since)
 
         else:
-          if prev is not None:
-            if f_faction is not None and prev == f_faction:
-              # Are we too close to this faction, given the ticks that have passed ?
-              possible_prev_inf = prev.influence + len(ticks) * 5.0
-              if abs(f.influence - possible_prev_inf) < 5.0:
-                to_update.append(s)
-                break
+          # It's above us, and we assume we don't grow.
+          possible_inf = f.influence
 
-        prev = f
+        if abs(f_faction.influence - possible_inf) < 0.05:
+          self.logger.debug(f"""
+System '{s.name}' ({s.systemaddress})
+Interest Faction: {f_faction.faction_id} - {f_faction.influence}
+This     Faction: {f.faction_id} - {f.influence}
+""")
+          to_update.append(s)
+          break
 
     return [s.name for s in to_update]
 
@@ -158,7 +151,12 @@ Interest Faction: {f_faction.faction_id} - {f_faction.influence}
     :param ticks: How many ticks to progress.
     :returns float: The projected max influence.
     """
+    # This is a *very* rough guesstimate of how much the other faction's
+    # influence could have increased.  It could be more than 5% if
+    # they started very low, or much less if they started higher.
+    # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/>
+    # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/page-6#post-8319830>
     for t in range(ticks):
-      influence += 5.0
+      influence += 0.05
 
     return influence
