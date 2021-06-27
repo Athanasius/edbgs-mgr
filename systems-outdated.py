@@ -133,7 +133,7 @@ def main():
       print(route_url)
 
     else:
-      print('Systems to be updated:')
+      print('\n\nSystems to be updated:')
       for s in tourist_systems:
         print(s)
 

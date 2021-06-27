@@ -105,6 +105,8 @@ class BGS:
 
       # Now to check if the faction of interest could now be in a conflict.
       for f in factions:
+        danger = False
+
         if f.faction_id == faction_id:
           continue
 
@@ -112,14 +114,19 @@ class BGS:
 
         if f.influence < f_faction.influence:
           # It's below 'us', so what *could* it be now ?
-          # TODO: Need to step day by day in case of an overshoot.
-          possible_inf = self.influence_could_be(f.influence, ticks_since)
+          # Need to step day by day in case of an overshoot.
+          for t in range(1, ticks_since):
+            possible_inf = self.influence_could_be(f.influence, t)
+            if abs(f_faction.influence - possible_inf) < 0.05:
+              danger = True
+              break
 
         else:
           # It's above us, and we assume we don't grow.
-          possible_inf = f.influence
+          if abs(f_faction.influence - f.influence) < 0.05:
+            danger = True
 
-        if abs(f_faction.influence - possible_inf) < 0.05:
+        if danger:
           self.logger.debug(f"""
 System '{s.name}' ({s.systemaddress})
 Interest Faction: {f_faction.faction_id} - {f_faction.influence}
