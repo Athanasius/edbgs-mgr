@@ -501,7 +501,7 @@ class database(object):
 
     :param since: `datetime` of oldest data to not need updating.
     :param faction_id: Optional faction to filter systems for presence.
-    :returns: `list` of system rows
+    :returns: `list` of system rows, in ascending last_updated order.
     """
     # self.logger.debug(f'Finding systems older than {since}')
     systems = []
@@ -523,6 +523,8 @@ class database(object):
 
       stmt = stmt.where(
         self.systems.c.last_updated < since
+      ).order_by(
+        self.systems.c.last_updated.asc()
       )
 
       self.logger.debug(f'Statement:\n{str(stmt)}\n')

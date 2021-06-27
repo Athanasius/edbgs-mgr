@@ -77,10 +77,20 @@ class BGS:
     # data since the given time (likely last tick plus 'fuzz').
     systems = self.db.systems_older_than(since, faction_id=faction_id)
 
+    # The systems are sorted in ascending (oldest first) last_updated order,
+    # thus the first one has the oldest data.  So use that to get ticks *once*
+    # for use in the loop below.
+    ticks = self.ebgs.ticks_since(systems[0].last_updated.astimezone(tz=timezone.utc))
+    # They come back as latest first, we want oldest first for this.
+    # ticks.reverse()
+
     # Now for each of those systems
     for s in systems:
+      # TODO: If interest-faction is below 7% ? it can't get into conflicts.
+
       # How many ticks since this system was update ?
-      ticks = self.ebgs.ticks_since(s.last_updated)
+      oldest_updated = s.last_updated.astimezone(tz=timezone.utc)
+      ticks_since = self.ticks_since(ticks, oldest_updated)
 
       # We need the inf% of all the factions in that system
       factions = self.db.system_factions_data(s.systemaddress)
@@ -88,6 +98,8 @@ class BGS:
       # Now to check if the faction of interest could now be in a conflict.
       prev = None
       f_faction = None
+      # XXX: Actually *worst* case is if *any* of the other factions could
+      #      have been brought up to match the faction of interest.
       for f in factions:
         if f.faction_id == faction_id:
           f_faction = f
@@ -99,7 +111,7 @@ class BGS:
             # they started very low, or much less if they started higher.
             # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/>
             # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/page-6#post-8319830>
-            possible_prev_inf = prev.influence + len(ticks) * 5.0
+            possible_prev_inf = prev.influence + ticks_since * 5.0
             if abs(f_faction.influence - possible_prev_inf) < 5.0:
               self.logger.debug(f"""System '{s.name}' ({s.systemaddress})
 Previous Faction: {prev.faction_id} - {prev.influence}
@@ -120,3 +132,16 @@ Interest Faction: {f_faction.faction_id} - {f_faction.influence}
         prev = f
 
     return [s.name for s in to_update]
+
+  def ticks_since(self, ticks: list, since: datetime) -> int:
+    """
+    Determine how many ticks there have been since the given timestamp.
+
+    :param ticks: The list of ticks from elitebgs.app API.
+    :param since: `datetime.datetime` of start point.
+    """
+    t = 0
+    while t < len(ticks) and ticks[t] > since:
+      t += 1
+
+    return t
