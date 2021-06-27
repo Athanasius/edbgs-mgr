@@ -1,3 +1,22 @@
+-  Master TODO list  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+*) update-data.py - config flag to not auto update, i.e. when called
+from cron.
+
+*) systems-oudated - flags for which heuristics to use. i.e. only wars,
+or everything but wars, or ...
+
+*) update-data.py - Remove all factions_presences before populating the
+new ones.  In a transaction.
+
+*) De-dupe found 'need an update' systems before spansh.
+
+*) Spot where our inf% is getting 'close' to another faction, risking a
+conflict.
+
+- Web interface for all of this, no biggy!
+  - For "updating data" provide a list of proposed systems first, with
+    all enabled, and allow culling before asking spansh for the route.
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 -  Conflict Report  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 i.e.
 
