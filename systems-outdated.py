@@ -48,8 +48,12 @@ __datasource = __parser.add_mutually_exclusive_group(required=True)
 __datasource.add_argument('--jsonfilename', help='Name of file containing elitebgs.app API output to process')
 __datasource.add_argument('--faction', help='Name of the Minor Faction to report on.')
 
-__parser.add_argument('--range', type=float, required=True, help='Ship max jump range for routing')
-__parser.add_argument('--start-system', type=str, required=True, help='Start system for tourist route')
+__spansh_sub = __parser.add_subparsers()
+__spansh = __spansh_sub.add_parser('spansh-route', help='Generate a spansh tourist route')
+#__spansh.add_argument('--spansh-route', action='store_true', help='Generate a spansh tourist route')
+__spansh.add_argument('--range', type=float, required=True, help='Ship max jump range for routing')
+__spansh.add_argument('--start-system', type=str, required=True, help='Start system for tourist route')
+
 
 args = __parser.parse_args()
 if args.loglevel:
@@ -129,11 +133,16 @@ def main():
     logger.error("No data source was specified?")
     exit(-1)
 
-  # exit(0)
   if len(tourist_systems) > 0:
-    spansh = ed_bgs.Spansh(logger)
-    route_url = spansh.tourist_route(args.start_system, args.range, tourist_systems, False)
-    print(route_url)
+    if hasattr(args, 'range') and hasattr(args, 'start_system'):
+      spansh = ed_bgs.Spansh(logger)
+      route_url = spansh.tourist_route(args.start_system, args.range, tourist_systems, False)
+      print(route_url)
+
+    else:
+      print('Systems to be updated:')
+      for s in tourist_systems:
+        print(s)
 
   else:
     logger.info('No systems to update!')
