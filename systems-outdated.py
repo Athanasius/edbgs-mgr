@@ -51,6 +51,7 @@ __datasource.add_argument('--faction', help='Name of the Minor Faction to report
 # Selection of heuristics
 __parser.add_argument('--active-conflicts', action='store_true', help='Consider any system with a known conflict.')
 __parser.add_argument('--possible-losing-conflicts', action='store_true', help='Consider any system so old we could now be in a 0:3 conflict state.')
+__parser.add_argument('--danger-of-conflicts', action='store_true', help='Consider any system that could now be one tick away from a pending conflict.')
 
 __spansh_sub = __parser.add_subparsers(title='Optional commands', description='Additional commands that may allow, or require, additional arguments.')
 __spansh = __spansh_sub.add_parser('spansh-route', help='Generate a spansh tourist route, requires additional arguments.')
@@ -115,6 +116,8 @@ def main():
 
     # Anywhere that was last seen with 'close' inf% to another MF and not
     # updated this tick.
+    if args.danger_of_conflicts:
+      tourist_systems.extend(bgs.stale_danger_of_conflicts(since, faction_id))
 
   else:
     logger.error("No data source was specified?")

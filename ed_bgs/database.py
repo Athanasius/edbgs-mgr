@@ -578,3 +578,22 @@ class database(object):
         systems.append(r)
 
     return systems
+
+  def system_factions_data(self, systemaddress: int):
+    """
+    Accumulate all the per-faction data for the given system.
+
+    :param systemaddress: ID of the system.
+    :returns: ???
+    """
+    with self.engine.connect() as conn:
+      stmt = self.factions_presences.select(
+      ).where(
+        self.factions_presences.c.systemaddress == systemaddress
+      ).order_by(
+        self.factions_presences.c.influence.asc()
+      )
+
+      self.logger.debug(f'Statement:\n{str(stmt)}\n')
+      return conn.execute(stmt).all()
+

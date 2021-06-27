@@ -61,3 +61,62 @@ class BGS:
       to_update.append(s.name)
 
     return to_update
+
+  def stale_danger_of_conflicts(self, since: datetime, faction_id: int) -> list:
+    """
+    Determine systems with data stale enough to be in danger of a conflict.
+
+    :param faction_id: Our DB id of the faction of interest.
+    :param since: `datetime.datetime` of newest data that's OK.
+    :returns: list of system names.
+    """
+    # What we'll return
+    to_update = []
+
+    # Need to consider every system the given faction is in that doesn't have
+    # data since the given time (likely last tick plus 'fuzz').
+    systems = self.db.systems_older_than(since, faction_id=faction_id)
+
+    # Now for each of those systems
+    for s in systems:
+      # How many ticks since this system was update ?
+      ticks = self.ebgs.ticks_since(s.last_updated)
+
+      # We need the inf% of all the factions in that system
+      factions = self.db.system_factions_data(s.systemaddress)
+
+      # Now to check if the faction of interest could now be in a conflict.
+      prev = None
+      f_faction = None
+      for f in factions:
+        if f.faction_id == faction_id:
+          f_faction = f
+
+          if prev is not None:
+            # Are we too close to this faction, given the ticks that have passed ?
+            # This is a *very* rough guesstimate of how much the other faction's
+            # influence could have increased.  It could be more than 5% if
+            # they started very low, or much less if they started higher.
+            # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/>
+            # Ref: <https://forums.frontier.co.uk/threads/influence-caps-gains-and-the-wine-analogy.423837/page-6#post-8319830>
+            possible_prev_inf = prev.influence + len(ticks) * 5.0
+            if abs(f_faction.influence - possible_prev_inf) < 5.0:
+              self.logger.debug(f"""System '{s.name}' ({s.systemaddress})
+Previous Faction: {prev.faction_id} - {prev.influence}
+Interest Faction: {f_faction.faction_id} - {f_faction.influence}
+""")
+              to_update.append(s)
+              break
+
+        else:
+          if prev is not None:
+            if f_faction is not None and prev == f_faction:
+              # Are we too close to this faction, given the ticks that have passed ?
+              possible_prev_inf = prev.influence + len(ticks) * 5.0
+              if abs(f.influence - possible_prev_inf) < 5.0:
+                to_update.append(s)
+                break
+
+        prev = f
+
+    return [s.name for s in to_update]
