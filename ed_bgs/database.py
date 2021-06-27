@@ -210,9 +210,35 @@ class database(object):
 
     return None
 
+  def record_factions_presences(self, system_id: int, factions: dict):
+    """
+    Record data for given faction in a specific system.
+
+    :param system_id: System id.
+    :param data: Array of faction data dicts.
+    """
+    with self.engine.begin() as conn:
+      # First remove all factions from the given system so we take note of
+      # retreats.
+      stmt = delete(self.factions_presences).where(
+        self.factions_presences.c.systemaddress == system_id
+      )
+      result = conn.execute(stmt)
+      # self.logger.debug(f'{result.rowcount} factions deleted from {system_id}')
+
+      # Now add the ones currently known to be in that system.
+      for f in factions:
+        stmt = insert(self.factions_presences).values(f)
+
+        # self.logger.debug(f'Statement:\n{str(stmt)}\n')
+        result = conn.execute(stmt)
+
   def record_faction_presence(self, faction_id: int, data: dict):
     """
     Record data for given faction in a specific system.
+
+    Deprecated: Update the entire system with `record_factions_presences()`
+                instead.
 
     :param faction_id: Our DB id for the faction.
     :param data: `dict` of the data
@@ -233,7 +259,6 @@ class database(object):
         # Assume already present
         self.logger.error('IntegrityError inserting faction presence data')
         return None
-
 
   def record_system(self, system_data: dict) -> Optional[int]:
     """
@@ -521,7 +546,7 @@ class database(object):
           )
         )
 
-      # self.logger.debug(f'Statement:\n{inner_stmt.whereclause}\n')
+      # self.logger.debug(f'Statement:\n{str(inner_stmt)}\n')
 
       stmt = self.systems.select(
       ).with_only_columns(
@@ -531,7 +556,7 @@ class database(object):
           inner_stmt
         )
       )
-      # self.logger.debug(f'Statement:\n{stmt.whereclause}\n')
+      # self.logger.debug(f'Statement:\n{str(stmt)}\n')
 
       result = conn.execute(stmt)
       for r in result.fetchall():

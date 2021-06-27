@@ -99,6 +99,28 @@ class EliteBGS:
 
     return f
 
+  def factions_in_system(self, system_id: int, factions: dict):
+    """
+    Store information about the given faction in the given system.
+
+    :param system_id: Our DB id of the system.
+    :param factions: elitebgs.app system factions dictionary.
+    """
+    fs = []
+    for f in factions:
+      faction_id = self.faction_name_only(f['name'])
+      fs.append(
+        {
+          'faction_id': faction_id,
+          'systemaddress': system_id,
+          'state': f['faction_details']['faction_presence']['state'],
+          'influence': f['faction_details']['faction_presence']['influence'],
+          'happiness': f['faction_details']['faction_presence']['happiness'],
+        }
+      )
+
+    self.db.record_factions_presences(system_id, fs)
+
   def faction_name_only(self, faction_name: str):
     """
     Ensure a faction name is in the database.
@@ -107,7 +129,7 @@ class EliteBGS:
     :returns:
     """
     faction_id = self.db.record_faction(faction_name)
-    # self.logger.debug(f'{faction_name} is id "{faction_id}"')
+    self.logger.debug(f'{faction_name} is id "{faction_id}"')
 
     return faction_id
 
@@ -158,12 +180,10 @@ class EliteBGS:
     system = self.db.record_system(system_db)
 
     # Now we have the system, record *all* the factions present in it
-    for f in system_data['factions']:
-      self.faction_in_system(
-        f['name'],
-        system['systemaddress'],
-        f['faction_details']['faction_presence'],
-      )
+    self.factions_in_system(
+      system['systemaddress'],
+      system_data['factions'],
+    )
 
 
     return system_data
