@@ -144,3 +144,16 @@ Interest Faction: {f_faction.faction_id} - {f_faction.influence}
       t += 1
 
     return t
+
+  def influence_could_be(self, influence: float, ticks: int) -> float:
+    """
+    Estimate the highest influence that could result from `ticks` ticks.
+
+    :param influence: The starting influence.
+    :param ticks: How many ticks to progress.
+    :returns float: The projected max influence.
+    """
+    for t in range(ticks):
+      influence += 5.0
+
+    return influence
