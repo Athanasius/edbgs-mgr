@@ -12,6 +12,10 @@ conflict.
 - Web interface for all of this, no biggy!
   - For "updating data" provide a list of proposed systems first, with
     all enabled, and allow culling before asking spansh for the route.
+
+	Django ?
+	https://fastapi.tiangolo.com/ ?
+	https://flask.palletsprojects.com/en/2.0.x/ ?
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 -  Conflict Report  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 i.e.
