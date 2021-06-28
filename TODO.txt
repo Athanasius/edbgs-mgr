@@ -2,12 +2,9 @@
 *) update-data.py - config flag to not auto update, i.e. when called
 from cron.
 
-*) systems-oudated - flags for which heuristics to use. i.e. only wars,
-or everything but wars, or ...
-
-*) De-dupe found 'need an update' systems before spansh.
-
 *) Spot where our inf% is getting 'close' to another faction, risking a
+
+*) Alert where a conflict is on its last day, unless 2+ ahead already.
 conflict.
 
 - Web interface for all of this, no biggy!
