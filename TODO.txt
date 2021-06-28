@@ -3,9 +3,11 @@
 from cron.
 
 *) Spot where our inf% is getting 'close' to another faction, risking a
+conflict.
 
 *) Alert where a conflict is on its last day, unless 2+ ahead already.
-conflict.
+
+*) Spot where we're close to Retreat.
 
 - Web interface for all of this, no biggy!
   - For "updating data" provide a list of proposed systems first, with
