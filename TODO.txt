@@ -1,4 +1,7 @@
 -  Master TODO list  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+*) --tick-plus is too little, has 2h6m or so after tick not have updated
+data.  Probably want to allow for float hours.
+
 *) update-data.py - config flag to not auto update, i.e. when called
 from cron.
 
