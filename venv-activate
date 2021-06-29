@@ -1,10 +1,13 @@
-# Source me in bash
+# Source me in bash or sh
 
 # Deactivate any existing venv
 deactivate
 
 # Ensure our *base* path is set
-. ~/.bash/bash.path
+if [ -f "${HOME}/.bash/bash.path" ];
+then
+	. "${HOME}/.bash/bash.path"
+fi
 
 # Now on with sorting out pyenv
 export PATH="/usr/local/src/pyenv/bin:$PATH"
