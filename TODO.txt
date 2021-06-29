@@ -16,6 +16,16 @@ conflict.
 	Django ?
 	https://fastapi.tiangolo.com/ ?
 	https://flask.palletsprojects.com/en/2.0.x/ ?
+-  Web Interface  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+* Auth via Discord
+  - Can this use Discord roles to mediate authorization ?
+
+* Make an API to gather the data, rather than ever relying on just "all
+  the data from this table".
+
+* Ability to trigger a data update, but with rate limiting.  Need to
+  know when the last run was.  Database 'meta' table ?
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 -  Conflict Report  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 i.e.
