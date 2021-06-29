@@ -1,17 +1,15 @@
+"""Database handling functionality."""
 import datetime
-import sqlalchemy
-from sqlalchemy import create_engine, delete, func, or_
-from sqlalchemy import MetaData, Table
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import insert
-# from sqlalchemy.orm import Session
-# SQLAlchemy Column types
-from sqlalchemy import (
-  Column, BigInteger, Boolean, DateTime, FetchedValue, Float, ForeignKey,
-  Index, Integer, Sequence, Text, Sequence, Text, UniqueConstraint
-)
 #  from sqlalchemy.sql.sqltypes import TIMESTAMP
 from typing import Optional
+
+import sqlalchemy
+# from sqlalchemy.orm import Session
+# SQLAlchemy Column types
+from sqlalchemy import (BigInteger, Column, DateTime, FetchedValue, Float, ForeignKey, Integer,
+                        MetaData, Sequence, Table, Text, UniqueConstraint, create_engine, delete, func, or_)
+from sqlalchemy.dialects.postgresql import insert
+
 
 #########################################################################
 # Our base class for database operations
@@ -598,4 +596,3 @@ class database(object):
 
       # self.logger.debug(f'Statement:\n{str(stmt)}\n')
       return conn.execute(stmt).all()
-
