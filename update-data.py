@@ -56,7 +56,7 @@ def main() -> int:
   :returns: Exit code.
   """
   logger.info('Initialising Database Connection')
-  db = ed_bgs.database(config['database']['url'], logger)
+  db = ed_bgs.Database(config['database']['url'], logger)
 
   ebgs = ed_bgs.EliteBGS(logger, db)
   # return None

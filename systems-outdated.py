@@ -117,7 +117,7 @@ def main() -> int:  # noqa: CCR001
 
   :returns: Exit code.
   """
-  db = ed_bgs.database(config['database']['url'], logger)
+  db = ed_bgs.Database(config['database']['url'], logger)
   ebgs = ed_bgs.EliteBGS(logger, db)
   bgs = ed_bgs.BGS(logger, db, ebgs)
 

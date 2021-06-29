@@ -2,7 +2,7 @@
 # Show exactly where in a line the error happened
 #show-source = True
 
-exclude = .git,venv,alembic
+exclude = .git,venv,alembic,manage.py,edbgs_django/urls.py,edbgs_django/__init__.py
 
 indent-size = 2
 max-line-length = 120
