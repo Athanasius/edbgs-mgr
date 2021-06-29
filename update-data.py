@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Script which should cause all relevant data to be recorded/updated in
-local database.
+Update all relevant data to be recorded/updated in local database.
 
 It may then go on to generate various reports.
 """
@@ -10,6 +9,7 @@ import argparse
 import logging
 import os
 import time
+
 import yaml
 
 import ed_bgs
@@ -32,7 +32,7 @@ logger.setLevel(__default_loglevel)
 __logger_ch = logging.StreamHandler()
 __logger_ch.setLevel(__default_loglevel)
 __logger_formatter = logging.Formatter('%(asctime)s; %(name)s; %(levelname)s; %(module)s.%(funcName)s: %(message)s')
-__logger_formatter.default_time_format = '%Y-%m-%d %H:%M:%S';
+__logger_formatter.default_time_format = '%Y-%m-%d %H:%M:%S'
 __logger_formatter.default_msec_format = '%s.%03d'
 __logger_ch.setFormatter(__logger_formatter)
 logger.addHandler(__logger_ch)
@@ -49,8 +49,12 @@ if args.loglevel:
   __logger_ch.setLevel(level)
 
 
-def main():
-  """Handle program invocation."""
+def main() -> int:
+  """
+  Handle program invocation.
+
+  :returns: Exit code.
+  """
   logger.info('Initialising Database Connection')
   db = ed_bgs.database(config['database']['url'], logger)
 
@@ -60,10 +64,10 @@ def main():
   for f in config['monitor_factions']:
     logger.info(f'Checking faction: {f} ...')
     # Fetch elitebgs.app data, and update in local db, for this faction
-    # The deeper code takes care of recording all the necessary data to 
+    # The deeper code takes care of recording all the necessary data to
     # know about the systems this faction is present in, other factions
     # involved in conflicts, and conflict data.
-    faction = ebgs.faction(f)
+    ebgs.faction(f)
     logger.info(f'Checking faction: {f} DONE')
 
   # Expire any conflict that has ended more than a day ago
@@ -71,6 +75,8 @@ def main():
   logger.info(f'Expired {ec} conflicts.')
 
   logger.info('All configured factions now up to date.')
+  return 0
+
 
 if __name__ == '__main__':
-  main()
+  exit(main())
