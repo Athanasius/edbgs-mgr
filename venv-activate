@@ -1,4 +1,6 @@
 # Source me in bash
+# Ensure we weren't already in a venv
+deactivate
 export PATH="/usr/local/src/pyenv/bin:$PATH"
 export PYENV_ROOT=/usr/local/pyenv
 eval "$(pyenv init -)"
