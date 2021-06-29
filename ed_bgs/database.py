@@ -1,7 +1,7 @@
 """Database handling functionality."""
 import datetime
 #  from sqlalchemy.sql.sqltypes import TIMESTAMP
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import sqlalchemy
 # from sqlalchemy.orm import Session
@@ -10,6 +10,10 @@ from sqlalchemy import (BigInteger, Column, DateTime, FetchedValue, Float, Forei
                         Table, Text, UniqueConstraint, create_engine, delete, func, or_)
 from sqlalchemy.dialects.postgresql import insert
 
+# isort off
+if TYPE_CHECKING:
+  import logging
+
 
 #########################################################################
 # Our base class for database operations
@@ -17,7 +21,7 @@ from sqlalchemy.dialects.postgresql import insert
 class Database(object):
   """Class for all database access."""
 
-  def __init__(self, url: str, logger):
+  def __init__(self, url: str, logger: 'logging.Logger'):
     self.logger = logger
 
     self.engine = create_engine(url)
@@ -225,7 +229,7 @@ class Database(object):
 
     return None
 
-  def record_factions_presences(self, system_id: int, factions: dict):
+  def record_factions_presences(self, system_id: int, factions: dict) -> None:
     """
     Record data for given faction in a specific system.
 
@@ -248,7 +252,7 @@ class Database(object):
         # self.logger.debug(f'Statement:\n{str(stmt)}\n')
         conn.execute(stmt)
 
-  def record_faction_presence(self, faction_id: int, data: dict):
+  def record_faction_presence(self, faction_id: int, data: dict) -> None:
     """
     Record data for given faction in a specific system.
 
@@ -318,7 +322,7 @@ class Database(object):
 
     return None
 
-  def record_faction_active_states(self, faction_id: int, system_id: int, states: list):
+  def record_faction_active_states(self, faction_id: int, system_id: int, states: list) -> None:
     """
     Update database for these to be the active states of the given faction.
 
@@ -346,7 +350,7 @@ class Database(object):
           )
         )
 
-  def record_faction_pending_states(self, faction_id: int, system_id: int, states: list):
+  def record_faction_pending_states(self, faction_id: int, system_id: int, states: list) -> None:
     """
     Update database for these to be the pending states of the given faction.
 
@@ -374,7 +378,7 @@ class Database(object):
           )
         )
 
-  def record_faction_recovering_states(self, faction_id: int, system_id: int, states: list):
+  def record_faction_recovering_states(self, faction_id: int, system_id: int, states: list) -> None:
     """
     Update database for these to be the recovering states of the given faction.
 
@@ -402,7 +406,7 @@ class Database(object):
           )
         )
 
-  def record_conflict(self, system_id: int, last_updated: str, conflict: dict):
+  def record_conflict(self, system_id: int, last_updated: str, conflict: dict) -> None:
     """
     Record current state of a conflict for the faction in a system.
 
@@ -452,7 +456,12 @@ class Database(object):
       self.record_faction_conflict(conn, faction1_id, conflict_id)
       self.record_faction_conflict(conn, faction2_id, conflict_id)
 
-  def record_faction_conflict(self, conn, faction_id, conflict_id):
+  def record_faction_conflict(
+    self,
+    conn: sqlalchemy.engine.base.Connection,
+    faction_id: Optional[int],
+    conflict_id: Optional[int]
+  ) -> None:
     """
     Record a conflict a faction is involved in.
 
@@ -472,7 +481,7 @@ class Database(object):
       # Assume it was already recorded
       pass
 
-  def faction_id_from_name(self, faction_name: str) -> int:
+  def faction_id_from_name(self, faction_name: str) -> Optional[int]:
     """Fetch our faction_id for the named faction.
 
     :param faction_name: `str` - faction of interest.
@@ -597,7 +606,7 @@ class Database(object):
 
     return systems
 
-  def system_factions_data(self, systemaddress: int):
+  def system_factions_data(self, systemaddress: int) -> list:
     """
     Accumulate all the per-faction data for the given system.
 
