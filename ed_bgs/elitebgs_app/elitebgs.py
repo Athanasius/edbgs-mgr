@@ -1,16 +1,19 @@
 """
-Mediate access to the API provided by https://elitebgs.app/
+Mediate access to the API provided by https://elitebgs.app/ .
 
 See: https://elitebgs.app/ebgs/docs/V5/
 """
 
 import datetime
 import json
+
 import requests
 from dateutil.parser import isoparse
 
+
 class EliteBGS:
   """Access to the elitebgs.app API."""
+
   FACTIONS_URL = 'https://elitebgs.app/api/ebgs/v5/factions'
   SYSTEMS_URL = 'https://elitebgs.app/api/ebgs/v5/systems'
   TICKS_URL = 'https://elitebgs.app/api/ebgs/v5/ticks'
@@ -66,11 +69,23 @@ class EliteBGS:
       s_data = self.system(s['system_name'])
 
       # Record any active states
-      self.db.record_faction_active_states(faction_id, s_data['system_address'], [active['state'] for active in s.get('active_states', [])])
+      self.db.record_faction_active_states(
+        faction_id,
+        s_data['system_address'],
+        [active['state'] for active in s.get('active_states', [])]
+      )
       # Record any pending states
-      self.db.record_faction_pending_states(faction_id, s_data['system_address'], [pending['state'] for pending in s.get('pending_states', [])])
+      self.db.record_faction_pending_states(
+        faction_id,
+        s_data['system_address'],
+        [pending['state'] for pending in s.get('pending_states', [])]
+      )
       # Record any recovering states
-      self.db.record_faction_recovering_states(faction_id, s_data['system_address'], [recovering['state'] for recovering in s.get('recovering_states', [])])
+      self.db.record_faction_recovering_states(
+        faction_id,
+        s_data['system_address'],
+        [recovering['state'] for recovering in s.get('recovering_states', [])]
+      )
 
       # Conflicts
       for c in s_data['conflicts']:
@@ -161,7 +176,8 @@ class EliteBGS:
 
     # Record the controlling faction
     controlling_faction_id = self.db.record_faction(system_data['controlling_minor_faction_cased'])
-    # self.logger.debug(f'Recorded controlling faction {system_data["controlling_minor_faction_cased"]} under id {controlling_faction_id}')
+    # self.logger.debug(f'Recorded controlling faction {system_data["controlling_minor_faction_cased"]}'
+    #                   f' under id {controlling_faction_id}')
 
     system_db = {
       'systemaddress':              system_data['system_address'],
@@ -184,7 +200,6 @@ class EliteBGS:
       system['systemaddress'],
       system_data['factions'],
     )
-
 
     return system_data
 
@@ -212,7 +227,7 @@ class EliteBGS:
   def ticks_since(self, since: datetime.datetime) -> list:
     """
     Retrieve the ticks since given datetime.
-    
+
     :param since: Oldest time of ticks to consider.
     :return: `list` of `datetime.datetime`.
     """
@@ -240,4 +255,3 @@ class EliteBGS:
 
     # self.logger.debug(f'Returning ticks:\n{ticks}\n')
     return ticks
-
