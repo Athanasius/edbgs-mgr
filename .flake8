@@ -2,8 +2,9 @@
 # Show exactly where in a line the error happened
 #show-source = True
 
-exclude = .git
+exclude = .git,venv,alembic
 
+indent-size = 2
 max-line-length = 120
 
 # check syntax in doctests
