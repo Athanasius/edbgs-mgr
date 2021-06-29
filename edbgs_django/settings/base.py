@@ -1,3 +1,4 @@
+"""Django settings: base."""
 from pathlib import Path
 
 import dj_database_url
@@ -142,7 +143,6 @@ STATICFILES_FINDERS = (
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR.parent.parent / "media"
-
 
 
 # ==============================================================================
