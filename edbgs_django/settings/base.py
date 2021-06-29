@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # CORE SETTINGS
 # ==============================================================================
 
-SECRET_KEY = config("SECRET_KEY", default="django-insecure$simple.settings.develop")
+SECRET_KEY = config("SECRET_KEY", default="django-insecure$edbgs_django.settings.develop")
 
 DEBUG = config("DEBUG", default=True, cast=bool)
 
@@ -28,11 +28,11 @@ INSTALLED_APPS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-ROOT_URLCONF = "simple.urls"
+ROOT_URLCONF = "edbgs_django.urls"
 
 INTERNAL_IPS = ["127.0.0.1"]
 
-WSGI_APPLICATION = "simple.wsgi.application"
+WSGI_APPLICATION = "edbgs_django.wsgi.application"
 
 
 # ==============================================================================
