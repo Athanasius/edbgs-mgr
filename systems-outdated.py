@@ -52,7 +52,7 @@ __age_args.add_argument(
 )
 __age_args.add_argument(
   '--tick-plus',
-  type=int, help='How many hours to add to last tick time to use as max age.'
+  type=float, help='How many hours to add to last tick time to use as max age.'
 )
 
 __datasource = __parser.add_mutually_exclusive_group(required=True)

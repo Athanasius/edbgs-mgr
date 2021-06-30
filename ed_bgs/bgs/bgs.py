@@ -42,12 +42,13 @@ class BGS:
 
     return to_update
 
-  def possible_losing_conflicts(self, since: datetime, tick_plus: int = 2, faction_id: int = None) -> list:
+  def possible_losing_conflicts(self, since: datetime, tick_plus: float = 2.1, faction_id: int = None) -> list:
     """
     Determine systems that might now be in 0:3 losing state in need of new data.
 
+    :param since: `datetime.datetime` time to compare against.
+    :param tick_plus: How many hours to add to tick times to 'ensure' new data.
     :param faction_id: Optional faction to filter on.
-    :param faction_id: Optional faction to filter systems for presence.
     :returns: list of system names.
     """
     # How many days could a system go until we could *just* pull back a
