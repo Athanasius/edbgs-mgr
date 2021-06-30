@@ -2,7 +2,26 @@
 # Show exactly where in a line the error happened
 #show-source = True
 
-exclude = .git,venv,alembic,manage.py,edbgs_django/urls.py,edbgs_django/__init__.py
+exclude = 
+	# General project excludes1
+	.git,
+	venv,
+	alembic
+	# Django 'main' excludes
+	manage.py,
+	# Django project-specific excludes
+	edbgs_django/urls.py,
+	edbgs_django/__init__.py,
+	edbgs_django/apps/admin.py,
+	edbgs_django/apps/apps.py,
+	# Django app-specific excludes
+	edbgs_django/apps/edbgs_mgr/__init__.py,
+	edbgs_django/apps/edbgs_mgr/admin.py,
+	edbgs_django/apps/edbgs_mgr/apps.py,
+	edbgs_django/apps/edbgs_mgr/migrations/__init__.py,
+	edbgs_django/apps/edbgs_mgr/models.py,
+	edbgs_django/apps/edbgs_mgr/tests.py,
+	edbgs_django/apps/edbgs_mgr/views.py,
 
 indent-size = 2
 max-line-length = 120
