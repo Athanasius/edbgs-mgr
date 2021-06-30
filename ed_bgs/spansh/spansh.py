@@ -1,15 +1,23 @@
-"""
-Mediate access to any spansh.co.uk APIs.
-"""
+"""Mediate access to any spansh.co.uk APIs."""
+
+import json
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import requests
 
+# isort off
+if TYPE_CHECKING:
+  import logging
+# isort on
+
+
 class Spansh:
   """Access to spansh.co.uk APIs."""
+
   TOURIST_URL = 'https://www.spansh.co.uk/api/tourist/route'
   TOURIST_RESULT_PREFIX = 'https://www.spansh.co.uk/tourist/results/'
 
-  def __init__(self, logger):
+  def __init__(self, logger: 'logging.Logger'):
     """
     Initialise access to spansh.co.uk APIs.
 
@@ -19,7 +27,7 @@ class Spansh:
 
     self.session = requests.Session()
 
-  def tourist_route(self, start: str, range: float, systems: list, loop: bool = False) -> str:
+  def tourist_route(self, start: str, range: float, systems: list, loop: bool = False) -> Optional[str]:
     """
     Ask for a Tourist Route around the specified systems.
 
@@ -31,10 +39,10 @@ class Spansh:
     """
     # We can't use a dict for this as we'll need to supply multiple
     # `destination` members.
-    data = [
+    data: List[Tuple[str, Optional[str]]] = [
       ('source', start),
-      ('range', range),
-      ('loop', int(loop)),
+      ('range', str(range)),
+      ('loop', str(int(loop))),
     ]
     for s in systems:
       data.append(
@@ -45,7 +53,7 @@ class Spansh:
 
     try:
       r = self.session.post(
-				self.TOURIST_URL,
+        self.TOURIST_URL,
         data,
       )
 

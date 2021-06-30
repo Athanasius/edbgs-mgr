@@ -1,10 +1,20 @@
-# Source me in bash
-# Ensure we weren't already in a venv
+# Source me in bash or sh
+
+# Deactivate any existing venv
 deactivate
+
+# Ensure our *base* path is set
+if [ -f "${HOME}/.bash/bash.path" ];
+then
+	. "${HOME}/.bash/bash.path"
+fi
+
+# Now on with sorting out pyenv
 export PATH="/usr/local/src/pyenv/bin:$PATH"
 export PYENV_ROOT=/usr/local/pyenv
-eval "$(pyenv init -)"
 eval "$(pyenv init --path)"
+eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
-# python -m venv venv
-source venv/bin/activate
+
+# And now activate the local venv
+. venv/bin/activate

@@ -1,13 +1,24 @@
 """
-Functions related to operating on the BGS data, including heuristics and the
-like.
+Functionality related to operating on BGS data.
+
+Includes heuristics and the like.
 """
 from datetime import datetime, timedelta, timezone
+from typing import TYPE_CHECKING
+
+# isort off
+if TYPE_CHECKING:
+  import logging
+
+  import ed_bgs.database as database
+  import ed_bgs.elitebgs_app.elitebgs as elitebgs
+# isort on
+
 
 class BGS:
   """Container class for BGS related functions."""
 
-  def __init__(self, logger, db, ebgs):
+  def __init__(self, logger: 'logging.Logger', db: 'database.Database', ebgs: 'elitebgs.EliteBGS'):
     """Initilised the BGS class instance."""
     self.logger = logger
     self.db = db
@@ -31,12 +42,13 @@ class BGS:
 
     return to_update
 
-  def possible_losing_conflicts(self, since: datetime, tick_plus: int = 2, faction_id: int = None) -> list:
+  def possible_losing_conflicts(self, since: datetime, tick_plus: float = 2.1, faction_id: int = None) -> list:
     """
     Determine systems that might now be in 0:3 losing state in need of new data.
 
+    :param since: `datetime.datetime` time to compare against.
+    :param tick_plus: How many hours to add to tick times to 'ensure' new data.
     :param faction_id: Optional faction to filter on.
-    :param faction_id: Optional faction to filter systems for presence.
     :returns: list of system names.
     """
     # How many days could a system go until we could *just* pull back a
@@ -57,12 +69,12 @@ class BGS:
     systems = self.db.systems_older_than(since + timedelta(hours=tick_plus), faction_id=faction_id)
     to_update = []
     for s in systems:
-      logger.debug(f'Adding system because faction could now be losing 0:3 in unknown conflict: {s.name}')
+      self.logger.debug(f'Adding system because faction could now be losing 0:3 in unknown conflict: {s.name}')
       to_update.append(s.name)
 
     return to_update
 
-  def stale_danger_of_conflicts(self, since: datetime, faction_id: int) -> list:
+  def stale_danger_of_conflicts(self, since: datetime, faction_id: int) -> list:  # noqa: CCR001
     """
     Determine systems with data stale enough to be in danger of a conflict.
 

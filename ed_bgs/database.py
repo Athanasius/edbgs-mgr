@@ -1,25 +1,27 @@
+"""Database handling functionality."""
 import datetime
+#  from sqlalchemy.sql.sqltypes import TIMESTAMP
+from typing import TYPE_CHECKING, Optional
+
 import sqlalchemy
-from sqlalchemy import create_engine, delete, func, or_
-from sqlalchemy import MetaData, Table
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.dialects.postgresql import insert
 # from sqlalchemy.orm import Session
 # SQLAlchemy Column types
-from sqlalchemy import (
-  Column, BigInteger, Boolean, DateTime, FetchedValue, Float, ForeignKey,
-  Index, Integer, Sequence, Text, Sequence, Text, UniqueConstraint
-)
-#  from sqlalchemy.sql.sqltypes import TIMESTAMP
-from typing import Optional
+from sqlalchemy import (BigInteger, Column, DateTime, FetchedValue, Float, ForeignKey, Integer, MetaData, Sequence,
+                        Table, Text, UniqueConstraint, create_engine, delete, func, or_)
+from sqlalchemy.dialects.postgresql import insert
+
+# isort off
+if TYPE_CHECKING:
+  import logging
+
 
 #########################################################################
 # Our base class for database operations
 ###########################################################################
-class database(object):
+class Database(object):
   """Class for all database access."""
 
-  def __init__(self, url: str, logger):
+  def __init__(self, url: str, logger: 'logging.Logger'):
     self.logger = logger
 
     self.engine = create_engine(url)
@@ -28,9 +30,11 @@ class database(object):
     ######################################################################
     # Table definitions
     self.factions_id_seq = Sequence('factions_id_seq', metadata=self.metadata)
-    self.factions = Table('factions', self.metadata,
+    self.factions = Table(
+      'factions', self.metadata,
       Column('name', Text, primary_key=True),
-      Column('id', Integer, self.factions_id_seq,
+      Column(
+        'id', Integer, self.factions_id_seq,
         server_default=self.factions_id_seq.next_value(), index=True,
         unique=True
       ),
@@ -40,7 +44,8 @@ class database(object):
       ),
     )
 
-    self.systems = Table('systems', self.metadata,
+    self.systems = Table(
+      'systems', self.metadata,
       Column('systemaddress', BigInteger, primary_key=True),
       Column('name', Text, index=True),
       Column('starpos_x', Float, default=None),
@@ -49,7 +54,8 @@ class database(object):
       Column('system_allegiance', Text, default=None),
       Column('system_economy', Text, default=None),
       Column('system_secondary_economy', Text, default=None),
-      Column('system_controlling_faction', Integer,
+      Column(
+        'system_controlling_faction', Integer,
         ForeignKey('factions.id'), nullable=False, index=True,
       ),
       Column('system_government', Text, default=None),
@@ -61,11 +67,14 @@ class database(object):
       ),
     )
 
-    self.factions_presences = Table('factions_presences', self.metadata,
-      Column('faction_id', Integer,
+    self.factions_presences = Table(
+      'factions_presences', self.metadata,
+      Column(
+        'faction_id', Integer,
         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
-      Column('systemaddress', BigInteger,
+      Column(
+        'systemaddress', BigInteger,
         ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, index=True),
@@ -79,32 +88,41 @@ class database(object):
     )
 
     # active states
-    self.factions_active_states = Table('factions_active_states', self.metadata,
-      Column('faction_id', Integer,
+    self.factions_active_states = Table(
+      'factions_active_states', self.metadata,
+      Column(
+        'faction_id', Integer,
         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
-      Column('systemaddress', BigInteger,
+      Column(
+        'systemaddress', BigInteger,
         ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, nullable=False),
     )
     # pending states
-    self.factions_pending_states = Table('factions_pending_states', self.metadata,
-      Column('faction_id', Integer,
+    self.factions_pending_states = Table(
+      'factions_pending_states', self.metadata,
+      Column(
+        'faction_id', Integer,
         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
-      Column('systemaddress', BigInteger,
+      Column(
+        'systemaddress', BigInteger,
         ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, nullable=False),
       Column('trend', Integer),
     )
     # recovering states
-    self.factions_recovering_states = Table('factions_recovering_states', self.metadata,
-      Column('faction_id', Integer,
+    self.factions_recovering_states = Table(
+      'factions_recovering_states', self.metadata,
+      Column(
+        'faction_id', Integer,
         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False, index=True,
       ),
-      Column('systemaddress', BigInteger,
+      Column(
+        'systemaddress', BigInteger,
         ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False, index=True,
       ),
       Column('state', Text, nullable=False),
@@ -112,14 +130,15 @@ class database(object):
     )
 
     self.conflicts_id_seq = Sequence('conflicts_id_seq', metadata=self.metadata)
-    self.conflicts = Table('conflicts', self.metadata,
+    self.conflicts = Table(
+      'conflicts', self.metadata,
       Column(
         'id', Integer, self.conflicts_id_seq,
         server_default=self.conflicts_id_seq.next_value(), primary_key=True,
       ),
       Column(
         'systemaddress', BigInteger,
-         ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False
+        ForeignKey('systems.systemaddress', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'created', DateTime,
@@ -132,11 +151,11 @@ class database(object):
       ),
       Column(
         'faction1_id', Integer,
-         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'faction2_id', Integer,
-         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'faction1_days_won', Integer,
@@ -162,14 +181,15 @@ class database(object):
       ),
     )
 
-    self.factions_conflicts = Table('factions_conflicts', self.metadata,
+    self.factions_conflicts = Table(
+      'factions_conflicts', self.metadata,
       Column(
         'faction_id', Integer,
-         ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
+        ForeignKey('factions.id', ondelete='CASCADE'), nullable=False
       ),
       Column(
         'conflict_id', Integer,
-         ForeignKey('conflicts.id', ondelete='CASCADE'), nullable=False
+        ForeignKey('conflicts.id', ondelete='CASCADE'), nullable=False
       ),
       UniqueConstraint(
         'faction_id',
@@ -188,7 +208,6 @@ class database(object):
     :param faction_name:
     :returns: id of the faction
     """
-
     # Attempt to INSERT
     with self.engine.connect() as conn:
       stmt = self.factions.insert().values(
@@ -210,7 +229,7 @@ class database(object):
 
     return None
 
-  def record_factions_presences(self, system_id: int, factions: dict):
+  def record_factions_presences(self, system_id: int, factions: dict) -> None:
     """
     Record data for given faction in a specific system.
 
@@ -223,7 +242,7 @@ class database(object):
       stmt = delete(self.factions_presences).where(
         self.factions_presences.c.systemaddress == system_id
       )
-      result = conn.execute(stmt)
+      conn.execute(stmt)
       # self.logger.debug(f'{result.rowcount} factions deleted from {system_id}')
 
       # Now add the ones currently known to be in that system.
@@ -231,9 +250,9 @@ class database(object):
         stmt = insert(self.factions_presences).values(f)
 
         # self.logger.debug(f'Statement:\n{str(stmt)}\n')
-        result = conn.execute(stmt)
+        conn.execute(stmt)
 
-  def record_faction_presence(self, faction_id: int, data: dict):
+  def record_faction_presence(self, faction_id: int, data: dict) -> None:
     """
     Record data for given faction in a specific system.
 
@@ -253,7 +272,7 @@ class database(object):
       )
 
       try:
-        result = conn.execute(stmt)
+        conn.execute(stmt)
 
       except sqlalchemy.exc.IntegrityError:
         # Assume already present
@@ -267,7 +286,6 @@ class database(object):
     :param system_data: `dict` with key:value per database column.
     :returns: The database data for that system.
     """
-
     # Attempt to INSERT
     with self.engine.connect() as conn:
       stmt = insert(self.systems).values(
@@ -304,7 +322,7 @@ class database(object):
 
     return None
 
-  def record_faction_active_states(self, faction_id: int, system_id: int, states: list):
+  def record_faction_active_states(self, faction_id: int, system_id: int, states: list) -> None:
     """
     Update database for these to be the active states of the given faction.
 
@@ -332,7 +350,7 @@ class database(object):
           )
         )
 
-  def record_faction_pending_states(self, faction_id: int, system_id: int, states: list):
+  def record_faction_pending_states(self, faction_id: int, system_id: int, states: list) -> None:
     """
     Update database for these to be the pending states of the given faction.
 
@@ -360,7 +378,7 @@ class database(object):
           )
         )
 
-  def record_faction_recovering_states(self, faction_id: int, system_id: int, states: list):
+  def record_faction_recovering_states(self, faction_id: int, system_id: int, states: list) -> None:
     """
     Update database for these to be the recovering states of the given faction.
 
@@ -388,7 +406,7 @@ class database(object):
           )
         )
 
-  def record_conflict(self, system_id: int, last_updated: str, conflict: dict):
+  def record_conflict(self, system_id: int, last_updated: str, conflict: dict) -> None:
     """
     Record current state of a conflict for the faction in a system.
 
@@ -397,8 +415,8 @@ class database(object):
     :param conflict: `dict` of conflict data from elitebgs.app API.
     """
     with self.engine.begin() as conn:
-			# We need the two factions to always be in the same order otherwise
-		  # the unique constraint won't always work.
+      # We need the two factions to always be in the same order otherwise
+      # the unique constraint won't always work.
       if conflict['faction1']['name'] > conflict['faction2']['name']:
         f = conflict['faction2'].copy()
         conflict['faction2'] = conflict['faction1'].copy()
@@ -434,12 +452,16 @@ class database(object):
         self.logger.error('IntegrityError inserting conflict data')
         return None
 
-
       # Update the factions_conflicts table as well.
       self.record_faction_conflict(conn, faction1_id, conflict_id)
       self.record_faction_conflict(conn, faction2_id, conflict_id)
 
-  def record_faction_conflict(self, conn, faction_id, conflict_id):
+  def record_faction_conflict(
+    self,
+    conn: sqlalchemy.engine.base.Connection,
+    faction_id: Optional[int],
+    conflict_id: Optional[int]
+  ) -> None:
     """
     Record a conflict a faction is involved in.
 
@@ -453,13 +475,13 @@ class database(object):
     ).on_conflict_do_nothing()
 
     try:
-      result = conn.execute(stmt)
+      conn.execute(stmt)
 
     except sqlalchemy.exc.IntegrityError:
       # Assume it was already recorded
       pass
 
-  def faction_id_from_name(self, faction_name: str) -> int:
+  def faction_id_from_name(self, faction_name: str) -> Optional[int]:
     """Fetch our faction_id for the named faction.
 
     :param faction_name: `str` - faction of interest.
@@ -481,8 +503,8 @@ class database(object):
   def expire_conflicts(self) -> int:
     """Remove data for any conflicts that have expired."""
     # For every conflict we know
-    ## Expire if in cooldown and older than a day.
-    ## Anything else just needs updated data.
+    #  Expire if in cooldown and older than a day.
+    #  Anything else just needs updated data.
     one_day_ago = datetime.datetime.utcnow() - datetime.timedelta(days=1)
     with self.engine.begin() as conn:
       stmt = delete(self.conflicts).where(
@@ -545,7 +567,10 @@ class database(object):
     systems = []
 
     with self.engine.connect() as conn:
-      # SELECT name FROM systems WHERE systemaddress IN (SELECT systemaddress FROM conflicts WHERE ( faction1_id = 1 OR faction2_id = 1 ) AND status != '' AND last_updated < TIMESTAMP '2021-06-24 23:22:00Z');
+      # SELECT name FROM systems
+      #  WHERE systemaddress IN
+      #   (SELECT systemaddress FROM conflicts WHERE ( faction1_id = 1 OR faction2_id = 1 )
+      #  AND status != '' AND last_updated < TIMESTAMP '2021-06-24 23:22:00Z');
       inner_stmt = self.conflicts.select(
       ).with_only_columns(
         self.conflicts.c.systemaddress
@@ -581,7 +606,7 @@ class database(object):
 
     return systems
 
-  def system_factions_data(self, systemaddress: int):
+  def system_factions_data(self, systemaddress: int) -> list:
     """
     Accumulate all the per-faction data for the given system.
 
@@ -598,4 +623,3 @@ class database(object):
 
       # self.logger.debug(f'Statement:\n{str(stmt)}\n')
       return conn.execute(stmt).all()
-
