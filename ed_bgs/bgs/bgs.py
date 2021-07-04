@@ -62,10 +62,7 @@ class BGS:
     #       4    0:0          23:05        4
     #       5    pending      22:50        5
     #       6    <none/other> 22:45        6
-    ticks = self.ebgs.ticks_since(datetime.now(tz=timezone.utc) - timedelta(days=7))
-    # Older than the oldest possible pending is what we want
-    since = ticks[5]
-
+    since = self.tick_time_x_ago(6)
     systems = self.db.systems_older_than(since + timedelta(hours=tick_plus), faction_id=faction_id)
     to_update = []
     for s in systems:
@@ -179,3 +176,20 @@ This     Faction: {f.faction_id} - {f.influence}
       influence += 0.05
 
     return influence
+
+  def tick_time_x_ago(self, ticks_ago: int) -> datetime:
+    """
+    Determine the time of the tick X ticks ago.
+
+    :param ticks_ago: How many ticks to look back.
+    """
+    # We want to go back to the tick *before*, so ticks_ago + 1
+    ticks = self.ebgs.ticks_since(
+      datetime.now(tz=timezone.utc)
+      - timedelta(days=ticks_ago + 1)
+    )
+
+    days_ago = datetime.now(tz=timezone.utc) - timedelta(days=ticks_ago)
+    tick_time = next(filter(lambda t: t < days_ago, ticks))
+
+    return tick_time
