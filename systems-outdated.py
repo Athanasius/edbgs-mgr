@@ -5,6 +5,7 @@ import argparse
 import json
 import logging
 import os
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -198,4 +199,4 @@ def main() -> int:  # noqa: CCR001
 
 
 if __name__ == '__main__':
-  exit(main())
+  sys.exit(main())
