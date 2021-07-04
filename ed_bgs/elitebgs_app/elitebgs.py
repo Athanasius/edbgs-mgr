@@ -235,6 +235,7 @@ class EliteBGS:
       return None
 
     # [{"_id":"60d266ede6bdf9696a4e0cc8","time":"2021-06-22T22:15:43.000Z","updated_at":"2021-06-22T22:40:45.726Z","__v":0}]
+    self.logger.debug(f'Returning: isoparse("{data[0]["time"]}")')
     return isoparse(data[0]['time'])
 
   def ticks_since(self, since: datetime.datetime) -> Optional[list]:
@@ -244,6 +245,7 @@ class EliteBGS:
     :param since: Oldest time of ticks to consider.
     :return: `list` of `datetime.datetime` on success, else `None`.
     """
+    self.logger.debug(f'{since=}')
     timemin = int(since.timestamp()) * 1000
     url = f'{self.TICKS_URL}?timeMin={timemin}'
     try:
@@ -264,6 +266,7 @@ class EliteBGS:
 
     ticks = []
     for t in data:
+      self.logger.debug(f'Including tick "{isoparse(t["time"])}"')
       ticks.append(isoparse(t['time']))
 
     # self.logger.debug(f'Returning ticks:\n{ticks}\n')
