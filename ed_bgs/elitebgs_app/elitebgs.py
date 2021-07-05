@@ -133,6 +133,11 @@ class EliteBGS:
     fs = []
     for f in factions:
       faction_id = self.faction_name_only(f['name'])
+      if isinstance(f['faction_details']['faction_presence'], list):
+        self.logger.warning(f"A list was seen for {system_id}/{f['faction_details']['name']}!"
+                            f"Aborting updating this system's factions!")
+        return
+
       fs.append(
         {
           'faction_id': faction_id,
