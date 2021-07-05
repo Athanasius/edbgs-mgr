@@ -123,18 +123,28 @@ class EliteBGS:
     }
     self.db.record_faction_presence(faction_id, set_data)
 
-  def factions_in_system(self, system_id: int, factions: dict) -> None:
+  def factions_in_system(self, elitebgs_system_id: int, system_id: int, factions: dict) -> None:
     """
     Store information about the given faction in the given system.
 
+    :param elitebgs_system_id: EliteBGS's id for the system.
     :param system_id: Our DB id of the system.
     :param factions: elitebgs.app system factions dictionary.
     """
     fs = []
     for f in factions:
       faction_id = self.faction_name_only(f['name'])
+
+      # It should be a single dict, not a list of dicts.
       if isinstance(f['faction_details']['faction_presence'], list):
         self.logger.warning(f"A list was seen for {system_id}/{f['faction_details']['name']}!"
+                            f"Aborting updating this system's factions!")
+        return
+
+      # And the EliteBGS system id should match what we asked for.
+      if f['faction_details']['faction_presence']['system_id'] != elitebgs_system_id:
+        self.logger.warning(f"faction_presence 'system_id' did not match the system's _id for "
+                            f"{f['faction_details']['name']} in {system_id} !"
                             f"Aborting updating this system's factions!")
         return
 
@@ -211,6 +221,7 @@ class EliteBGS:
 
     # Now we have the system, record *all* the factions present in it
     self.factions_in_system(
+      system_data['_id'],
       system['systemaddress'],
       system_data['factions'],
     )
