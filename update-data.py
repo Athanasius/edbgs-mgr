@@ -9,6 +9,7 @@ import argparse
 import logging
 import os
 import time
+import sys
 
 import yaml
 
@@ -79,4 +80,4 @@ def main() -> int:
 
 
 if __name__ == '__main__':
-  exit(main())
+  sys.exit(main())
