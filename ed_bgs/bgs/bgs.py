@@ -24,6 +24,17 @@ class BGS:
     self.db = db
     self.ebgs = ebgs
 
+  def systems_outdated(self, faction_id: int, since: datetime) -> list:
+    """
+    Determine all systems the given faction is known in, in need of update.
+
+    :param faction_id: Our DB id of the faction of interest.
+    :param since: `datetime.datetime` of newest data that's OK.
+    :returns: list of system names.
+    """
+    systems = self.db.systems_older_than(since, faction_id=faction_id)
+    return [s.name for s in systems]
+
   def active_conflicts_needing_update(self, faction_id: int, since: datetime) -> list:
     """
     Determine systems in need of data update due to active conflict.

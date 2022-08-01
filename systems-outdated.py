@@ -66,6 +66,13 @@ __datasource.add_argument(
   help='Name of the Minor Faction to report on.'
 )
 
+# We just want to be sure *all* the systems are up to date.
+__parser.add_argument(
+  '--all-systems',
+  action='store_true',
+  help='Consider ALL systems.'
+)
+
 # Selection of heuristics
 __parser.add_argument(
   '--active-conflicts',
@@ -159,19 +166,24 @@ def main() -> int:  # noqa: CCR001
       logger.error(f'Unknown faction: {args.faction} - CASE MATTERS!')
       return -3
 
-    if args.active_conflicts:
-      logger.info('Checking for stale systems with known active conflicts...')
-      tourist_systems.extend(bgs.active_conflicts_needing_update(faction_id, since))
+    if args.all_systems:
+      logger.debug(f'all-systems for {args.faction=}')
+      tourist_systems.extend(bgs.systems_outdated(faction_id, since))
 
-    if args.possible_losing_conflicts:
-      logger.info('Checking for stale systems with possible losing active conflicts...')
-      tourist_systems.extend(bgs.possible_losing_conflicts(since, faction_id=faction_id, tick_plus=args.tick_plus))
+    else:
+      if args.active_conflicts:
+        logger.info('Checking for stale systems with known active conflicts...')
+        tourist_systems.extend(bgs.active_conflicts_needing_update(faction_id, since))
 
-    # Anywhere that was last seen with 'close' inf% to another MF and not
-    # updated this tick.
-    if args.danger_of_conflicts:
-      logger.info('Checking for stale systems with possible active conflicts...')
-      tourist_systems.extend(bgs.stale_danger_of_conflicts(since, faction_id))
+      if args.possible_losing_conflicts:
+        logger.info('Checking for stale systems with possible losing active conflicts...')
+        tourist_systems.extend(bgs.possible_losing_conflicts(since, faction_id=faction_id, tick_plus=args.tick_plus))
+
+      # Anywhere that was last seen with 'close' inf% to another MF and not
+      # updated this tick.
+      if args.danger_of_conflicts:
+        logger.info('Checking for stale systems with possible active conflicts...')
+        tourist_systems.extend(bgs.stale_danger_of_conflicts(since, faction_id))
 
   else:
     logger.error("No data source was specified?")
