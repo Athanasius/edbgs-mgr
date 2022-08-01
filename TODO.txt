@@ -32,6 +32,9 @@ conflict.
 
 * Ability to trigger a data update, but with rate limiting.  Need to
   know when the last run was.  Database 'meta' table ?
+
+* Tag whole systems or assets as "should be ours", and then use that to
+  recommend actions for taking them.
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 -  Conflict Report  -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 i.e.
