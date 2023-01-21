@@ -1,3 +1,6 @@
+**This project has been retired (but the live version might still be running).  Please fork and continue work on it if you find it useful.**
+===
+
 # Elite Dangerous - Background Simulation (BGS) Management Tools
 
 This project relates to the computer game
